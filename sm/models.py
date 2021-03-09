@@ -22,7 +22,7 @@ class Person(models.Model):
     
 
 class Client(models.Model):
-    clid = models.OneToOneField('Person', models.DO_NOTHING, db_column='clid', primary_key=False)
+    id = models.OneToOneField('Person', models.DO_NOTHING, db_column='id', primary_key=True)
     email = models.TextField(blank=True, null=True)
 
 
@@ -33,7 +33,7 @@ class BankAccount(models.Model):
 
     
 class Broker(models.Model):
-    bid = models.OneToOneField('Person', models.DO_NOTHING, db_column='bid', primary_key=False)
+    id = models.OneToOneField('Person', models.DO_NOTHING, db_column='bid', primary_key=True)
     commission = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
     latency = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
 
