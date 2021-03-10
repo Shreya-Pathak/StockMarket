@@ -25,3 +25,22 @@ def clientsignup(request):
     else:
         form = allforms.SignUpForm()
     return render(request, 'client_signup.html', {'form': form})
+
+def brokersignup(request):
+    if request.method == 'POST':
+        form = allforms.SignUpForm_Broker(request.POST)
+        if form.is_valid():
+            user = allmodels.Person(name=form.cleaned_data.get('name'),address=form.cleaned_data.get('address'),telephone=form.cleaned_data.get('telephone'))
+            # user.refresh_from_db()  # load the profile instance created by the signal
+            user.save()
+            # print(user.id,end='****\n')
+            broker=allmodels.Broker(id=user,commission=form.cleaned_data.get('commission'),latency=form.cleaned_data.get('latency'))
+            broker.save()
+            # raw_password = form.cleaned_data.get('password1')
+            # user = authenticate(username=user.username, password=raw_password)
+            # login(request, user)
+            # return redirect('home')
+            return HttpResponseRedirect('/sm/')
+    else:
+        form = allforms.SignUpForm_Broker()
+    return render(request, 'broker_signup.html', {'form': form})

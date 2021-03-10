@@ -1,0 +1,45 @@
+{% extends 'base_generic.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<style>
+    input {max-width: 12em; margin: 5px;};
+</style>
+  <!-- <h2>Sign up</h2> -->
+  <div> <center>
+  <fieldset class="border p-2" style="width: 45em">
+   <legend  class="w-auto">Broker Sign Up</legend>
+  <form method="post" >
+    {% csrf_token %}
+    {% crispy form %}
+    <!-- {% for field in form %}
+      <p> -->
+        <!-- {{ field.label_tag }}<br> -->
+        <!-- {{ field|as_crispy_field }} -->
+        <!-- {% if field.help_text %}
+          <small style="color: grey">{{ field.help_text }}</small>
+        {% endif %} -->
+        <!-- {% for error in field.errors %}
+          <p style="color: red">{{ error }}</p>
+        {% endfor %} -->
+<!--       </p>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Sign in</button>
+ -->    <!-- <button type="submit">Sign up</button> -->
+  </form>
+  </fieldset>
+  </center>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+ <ul class="sidebar-nav">
+          <li><a href="{% url 'index'%}">Home</a>
+            <ul>
+                <li><a href="{% url 'index' %}"> One</a></li>
+            </ul>
+          </li>
+          <li><a href="{% url 'index'%}">Two</a></li>
+          </ul>
+     {% endblock %}

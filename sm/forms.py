@@ -4,8 +4,11 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column, Reset, Fieldset
 
 numeric = RegexValidator(r'^[0-9]+$', 'Only digit characters.')
+dec = RegexValidator(r'^\d+[.,]?\d*$|^\d*[.,]?\d+$', 'Only decimal numbers.')
 
 class SignUpForm(forms.Form):
     # birth_date = forms.DateField(help_text='Required. Format: YYYY-MM-DD')
@@ -36,3 +39,23 @@ class SignUpForm(forms.Form):
 
     #     # return any errors if found
     #     return self.cleaned_data
+
+class SignUpForm_Broker(forms.Form):
+    # birth_date = forms.DateField(help_text='Required. Format: YYYY-MM-DD')
+    name = forms.CharField(max_length=30, required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+    address= forms.CharField(max_length=30, required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+    telephone = forms.CharField(max_length=30, required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+    commission = forms.CharField(max_length=30, required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}), validators=[dec])
+    latency = forms.CharField(max_length=30, required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}),validators=[dec])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        # self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            'name','address','telephone','commission', 'latency',
+            Submit('submit', 'Sign Up', css_class='btn btn-primary')
+        )
