@@ -19,3 +19,14 @@
     <button type="submit">Sign up</button>
   </form>
 {% endblock %}
+
+{% block sidebar %}
+ <ul class="sidebar-nav">
+          <li><a href="{% url 'index'%}">Home</a>
+            <ul>
+                <li><a href="{% url 'index' %}"> One</a></li>
+            </ul>
+          </li>
+          <li><a href="{% url 'stocklist'%}">Stock Listings</a></li>
+          </ul>
+     {% endblock %}

@@ -1,5 +1,7 @@
 from django.db import models
-from timescale.db.models.models import TimescaleModel
+# from timescale.db.models.models import TimescaleModel
+from timescale.db.models.fields import TimescaleDateTimeField
+from timescale.db.models.managers import TimescaleManager
 
 # Create your models here.
 # class Metric(TimescaleModel):
@@ -48,7 +50,9 @@ class Buyorder(models.Model):
     initial_quantity = models.IntegerField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
     completed_quantity = models.IntegerField(blank=True, null=True)
-    creation_time = models.DateTimeField(blank=True, null=True)
+    creation_time = TimescaleDateTimeField(interval="1 day",blank=True, null=True)
+    objects = models.Manager()
+    timescale = TimescaleManager()
 
 
 class Company(models.Model):
@@ -59,18 +63,21 @@ class Company(models.Model):
 
     
 class Exchange(models.Model):
-    eid = models.IntegerField(primary_key=False)
+    # eid = models.IntegerField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
-    
+class Stock(models.Model):
+    ticker = models.TextField(primary_key=True, unique=True)
+    total_stocks = models.IntegerField(blank=True, null=True)
+
 class Indices(models.Model):
-    eid = models.OneToOneField(Exchange, models.DO_NOTHING, db_column='eid', primary_key=False)
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid', primary_key=False)
     iid = models.IntegerField()
     index_name = models.TextField(blank=True, null=True)
 
     
 class Listedat(models.Model):
-    ticker = models.OneToOneField('Stock', models.DO_NOTHING, db_column='ticker', primary_key=False)
+    ticker = models.ForeignKey("Stock", models.DO_NOTHING, db_column='ticker' , to_field='ticker', primary_key=False)
     eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid',default=0)
 
     
@@ -84,7 +91,9 @@ class Oldorder(models.Model):
     quantity = models.IntegerField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
     order_type = models.TextField()
-    creation_time = models.DateTimeField(blank=True, null=True)
+    creation_time = TimescaleDateTimeField(interval="1 day",blank=True, null=True)
+    objects = models.Manager()
+    timescale = TimescaleManager()
 
     
 class Partof(models.Model):
@@ -99,10 +108,12 @@ class Portfolio(models.Model):
 
 
 class Pricehistory(models.Model):
-    ticker = models.OneToOneField('Stock', models.DO_NOTHING, db_column='ticker', primary_key=False,default=0)
+    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', to_field='ticker', primary_key=False,default=0)
     eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid',default=0)
-    creation_time = models.DateTimeField()
+    creation_time = TimescaleDateTimeField(interval="1 day")
     price = models.DecimalField(max_digits=10, decimal_places=5)
+    objects = models.Manager()
+    timescale = TimescaleManager()
 
 
 class Recommendation(models.Model):
@@ -125,13 +136,11 @@ class Sellorder(models.Model):
     initial_quantity = models.IntegerField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
     completed_quantity = models.IntegerField(blank=True, null=True)
-    creation_time = models.DateTimeField(blank=True, null=True)
+    creation_time = TimescaleDateTimeField(interval="1 day",blank=True, null=True)
+    objects = models.Manager()
+    timescale = TimescaleManager()
 
     
-class Stock(models.Model):
-    ticker = models.TextField(primary_key=False)
-    total_stocks = models.IntegerField(blank=True, null=True)
-
     
 class Stockwishlist(models.Model):
     clid = models.OneToOneField('Wishlist', models.DO_NOTHING, db_column='clid')

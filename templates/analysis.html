@@ -1,22 +1,7 @@
 {% extends 'base_generic.html' %}
 
-{% load crispy_forms_tags %}
-
 {% block content %}
-<style>
-    input {max-width: 12em; margin: 5px;};
-</style>
-  <!-- <h2>Sign up</h2> -->
-  <div> <center>
-  <fieldset class="border p-2" style="width: 45em">
-   <legend  class="w-auto">Broker Sign Up</legend>
-  <form method="post" >
-    {% csrf_token %}
-    {% crispy form %}
-  </form>
-  </fieldset>
-  </center>
-</div>
+<img src="{{ data }}" alt="" height="500" width="500">
 {% endblock %}
 
 {% block sidebar %}
