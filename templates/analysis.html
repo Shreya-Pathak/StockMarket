@@ -1,13 +1,8 @@
-{% extends 'base_generic.html' %} {% block content %}
+{% extends 'base_generic.html' %} 
+
+{% block content %}
 <img src="{{ data }}" alt="" height="500" width="500" />
-{% endblock %} {% block sidebar %}
-<ul class="sidebar-nav">
-    <li>
-        <a href="{% url 'index'%}">Home</a>
-        <ul>
-            <li><a href="{% url 'index' %}"> One</a></li>
-        </ul>
-    </li>
-    <li><a href="{% url 'stocklist'%}">Stock Listings</a></li>
-</ul>
+{% endblock %} 
+
+{% block broker_sidebar %}
 {% endblock %}

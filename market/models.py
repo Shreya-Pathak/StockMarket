@@ -1,155 +1,227 @@
 from django.db import models
-# from timescale.db.models.models import TimescaleModel
+from django.db import DEFAULT_DB_ALIAS
+from django.db.transaction import Atomic, get_connection
 from timescale.db.models.fields import TimescaleDateTimeField
 from timescale.db.models.managers import TimescaleManager
 
-# Create your models here.
-# class Metric(TimescaleModel):
-#    temperature = models.FloatField()
 
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=False
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
-# from django.db import models
+class Stock(models.Model):
+    sid = models.AutoField(primary_key=True, db_column='sid')
+    ticker = models.TextField(unique=True)
+    total_stocks = models.IntegerField(blank=False, null=False)
+
+
+class Exchange(models.Model):
+    eid = models.AutoField(primary_key=True, db_column='eid')
+    name = models.TextField(unique=True, blank=True, null=True)
+
+
+class Indices(models.Model):
+    iid = models.AutoField(primary_key=True, db_column='iid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+    index_name = models.TextField(blank=False, null=False)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['eid', 'index_name'], name='unique_index_exchange')]
+
+
+class Company(models.Model):
+    cid = models.AutoField(primary_key=True, db_column='cid')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    name = models.TextField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    country = models.TextField(blank=True, null=True)
 
 
 class Person(models.Model):
-    # pid = models.TextField(primary_key=False)
-    name = models.TextField(blank=True, null=True)
+    pid = models.AutoField(primary_key=True, db_column='pid')
+    name = models.TextField(blank=False, null=False)
     address = models.TextField(blank=True, null=True)
     telephone = models.TextField(blank=True, null=True)
 
 
 class Client(models.Model):
-    id = models.OneToOneField('Person', models.DO_NOTHING, db_column='id', primary_key=True)
-    email = models.TextField(blank=True, null=True)
-
-
-class BankAccount(models.Model):
-    account_number = models.IntegerField()
-    clid = models.ForeignKey('Client', models.DO_NOTHING, db_column='clid', blank=True, null=True, default='')
-    balance = models.DecimalField(max_digits=10, decimal_places=5)
+    clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
+    email = models.TextField(blank=False, null=False)
 
 
 class Broker(models.Model):
-    id = models.OneToOneField('Person', models.DO_NOTHING, db_column='bid', primary_key=True)
-    commission = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
-    latency = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
-
-
-class Buyorder(models.Model):
-    orderid = models.IntegerField(primary_key=False)
-    clid = models.ForeignKey('Portfolio', models.DO_NOTHING, db_column='clid', blank=True, null=True, default=0)
-    pname = models.TextField(blank=True, null=True)
-    bid = models.ForeignKey('Registeredat', models.DO_NOTHING, db_column='bid', blank=True, null=True, default=0)
-    eid = models.IntegerField(blank=True, null=True)
-    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', blank=True, null=True)
-    initial_quantity = models.IntegerField(blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
-    completed_quantity = models.IntegerField(blank=True, null=True)
-    creation_time = TimescaleDateTimeField(interval="1 day", blank=True, null=True)
-    objects = models.Manager()
-    timescale = TimescaleManager()
-
-
-class Company(models.Model):
-    cid = models.IntegerField(primary_key=False)
-    name = models.TextField(blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', blank=True, null=True, default=0)
-
-
-class Exchange(models.Model):
-    # eid = models.IntegerField(primary_key=True)
-    name = models.TextField(blank=True, null=True)
-
-
-class Stock(models.Model):
-    ticker = models.TextField(primary_key=True, unique=True)
-    total_stocks = models.IntegerField(blank=True, null=True)
-
-
-class Indices(models.Model):
-    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid', primary_key=False)
-    iid = models.IntegerField()
-    index_name = models.TextField(blank=True, null=True)
-
-
-class Listedat(models.Model):
-    ticker = models.ForeignKey("Stock", models.DO_NOTHING, db_column='ticker', to_field='ticker', primary_key=False)
-    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid', default=0)
-
-
-class Oldorder(models.Model):
-    orderid = models.IntegerField(primary_key=False)
-    clid = models.ForeignKey('Portfolio', models.DO_NOTHING, db_column='clid', blank=True, null=True)
-    pname = models.TextField(blank=True, null=True)
-    bid = models.ForeignKey('Registeredat', models.DO_NOTHING, db_column='bid', blank=True, null=True)
-    eid = models.IntegerField(blank=True, null=True)
-    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', blank=True, null=True)
-    quantity = models.IntegerField(blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
-    order_type = models.TextField()
-    creation_time = TimescaleDateTimeField(interval="1 day", blank=True, null=True)
-    objects = models.Manager()
-    timescale = TimescaleManager()
-
-
-class Partof(models.Model):
-    ticker = models.OneToOneField('Stock', models.DO_NOTHING, db_column='ticker', primary_key=False)
-    eid = models.ForeignKey(Indices, models.DO_NOTHING, db_column='eid', default=0)
-    iid = models.IntegerField()
+    bid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='bid')
+    email = models.TextField(blank=False, null=False)
+    commission = models.DecimalField(max_digits=15, decimal_places=2)
+    latency = models.DecimalField(max_digits=15, decimal_places=2)
 
 
 class Portfolio(models.Model):
-    clid = models.OneToOneField(Client, models.DO_NOTHING, db_column='clid', primary_key=False)
-    pname = models.TextField()
+    folio_id = models.AutoField(primary_key=True, db_column='folio_id')
+    clid = models.OneToOneField(Client, models.DO_NOTHING, db_column='clid')
+    pname = models.TextField(blank=False, null=False)
 
-
-class Pricehistory(models.Model):
-    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', to_field='ticker', primary_key=False, default=0)
-    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid', default=0)
-    creation_time = TimescaleDateTimeField(interval="1 day")
-    price = models.DecimalField(max_digits=10, decimal_places=5)
-    objects = models.Manager()
-    timescale = TimescaleManager()
-
-
-class Recommendation(models.Model):
-    bid = models.OneToOneField(Broker, models.DO_NOTHING, db_column='bid', primary_key=False)
-    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', default=0)
-
-
-class Registeredat(models.Model):
-    bid = models.OneToOneField(Broker, models.DO_NOTHING, db_column='bid', primary_key=False)
-    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid', default=0)
-
-
-class Sellorder(models.Model):
-    orderid = models.IntegerField(primary_key=False)
-    clid = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='clid', blank=True, null=True)
-    pname = models.TextField(blank=True, null=True)
-    bid = models.ForeignKey(Registeredat, models.DO_NOTHING, db_column='bid', blank=True, null=True, default=0)
-    eid = models.IntegerField(blank=True, null=True)
-    ticker = models.ForeignKey('Stock', models.DO_NOTHING, db_column='ticker', blank=True, null=True, default=0)
-    initial_quantity = models.IntegerField(blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
-    completed_quantity = models.IntegerField(blank=True, null=True)
-    creation_time = TimescaleDateTimeField(interval="1 day", blank=True, null=True)
-    objects = models.Manager()
-    timescale = TimescaleManager()
-
-
-class Stockwishlist(models.Model):
-    clid = models.OneToOneField('Wishlist', models.DO_NOTHING, db_column='clid')
-    wname = models.TextField()
-    ticker = models.ForeignKey(Stock, models.DO_NOTHING, db_column='ticker', default=0)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['clid', 'pname'], name='client_portfolio_pkey')]
 
 
 class Wishlist(models.Model):
+    wish_id = models.AutoField(primary_key=True, db_column='wish_id')
     clid = models.OneToOneField(Client, models.DO_NOTHING, db_column='clid')
-    wname = models.TextField()
+    wname = models.TextField(blank=False, null=False)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['clid', 'wname'], name='client_wishlist_pkey')]
+
+
+class BankAccount(models.Model):
+    account_number = models.IntegerField(primary_key=True, db_column='account_number')
+    pid = models.ForeignKey(Person, models.DO_NOTHING, default=0, db_column='pid')
+    balance = models.DecimalField(max_digits=15, decimal_places=2)
+
+    class Meta:
+        constraints = [models.CheckConstraint(check=models.Q(balance__gte=0), name='valid_balance')]
+
+
+class ListedAt(models.Model):
+    listed_id = models.AutoField(primary_key=True, db_column='listed_id')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['sid', 'eid'], name='exchange_stock_pkey')]
+
+
+class StockPriceHistory(models.Model):
+    stock_price_id = models.AutoField(primary_key=True, db_column='stock_price_id')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+    creation_time = TimescaleDateTimeField(interval="1 day")
+    price = models.DecimalField(max_digits=15, decimal_places=2)
+    objects = models.Manager()
+    timescale = TimescaleManager()
+
+    # add trigger logic for adding to IndexPriceHistory
+    def save(self, *args, **kwargs):
+        # do stuff with self.sttributes
+        super().save(*args, **kwargs)  # Call the "real" save() method.
+
+    # do stuff
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['sid', 'eid', 'creation_time', 'price'], name='stock_price_pkey')]
+
+
+class IndexPriceHistory(models.Model):
+    index_price_id = models.AutoField(primary_key=True, db_column='index_price_id')
+    iid = models.ForeignKey(Indices, models.DO_NOTHING, db_column='iid')
+    creation_time = TimescaleDateTimeField(interval="1 day")
+    price = models.DecimalField(max_digits=15, decimal_places=2)
+    objects = models.Manager()
+    timescale = TimescaleManager()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['iid', 'creation_time', 'price'], name='index_price_pkey')]
+
+
+class PartOfIndex(models.Model):
+    partof_id = models.AutoField(primary_key=True, db_column='partof_id')
+    sid = models.OneToOneField(Stock, models.DO_NOTHING, db_column='sid')
+    iid = models.ForeignKey(Indices, models.DO_NOTHING, db_column='iid')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['sid', 'iid'], name='stock_index_pkey')]
+
+
+class StockWishlist(models.Model):
+    stock_wish_id = models.AutoField(primary_key=True, db_column='stock_wish_id')
+    wish_id = models.ForeignKey(Wishlist, models.DO_NOTHING, db_column='wish_id')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['wish_id', 'sid'], name='wish_stock_pkey')]
+
+
+class Recommendation(models.Model):
+    rec_id = models.AutoField(primary_key=True, db_column='rec_id')
+    bid = models.OneToOneField(Broker, models.DO_NOTHING, db_column='bid')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['bid', 'sid'], name='broker_stock_recommend_pkey')]
+
+
+class RegisteredAt(models.Model):
+    reg_id = models.AutoField(primary_key=True, db_column='reg_id')
+    bid = models.OneToOneField(Broker, models.DO_NOTHING, db_column='bid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['bid', 'eid'], name='broker_exchange_reg_pkey')]
+
+
+class Holdings(models.Model):
+    hold_id = models.AutoField(primary_key=True, db_column='hold_id')
+    folio_id = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='folio_id')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    quantity = models.IntegerField(blank=False, null=False)
+    total_price = models.DecimalField(max_digits=15, decimal_places=2)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['folio_id', 'sid'], name='portfolio_stock_pkey')]
+
+
+class OldOrder(models.Model):
+    order_id = models.AutoField(primary_key=True, db_column='order_id')
+    folio_id = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='folio_id')
+    reg_id = models.ForeignKey(RegisteredAt, models.DO_NOTHING, db_column='reg_id')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    quantity = models.IntegerField(blank=False, null=False)
+    price = models.DecimalField(max_digits=15, decimal_places=2)
+    order_type = models.TextChoices('Buy', 'Sell')
+    creation_time = TimescaleDateTimeField(interval="1 day")
+    objects = models.Manager()
+    timescale = TimescaleManager()
+
+
+class BuySellOrder(models.Model):
+    order_id = models.AutoField(primary_key=True, db_column='order_id')
+    folio_id = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='folio_id')
+    bid = models.ForeignKey(Broker, models.DO_NOTHING, db_column='bid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    initial_quantity = models.IntegerField(blank=False, null=False)
+    completed_quantity = models.IntegerField(blank=False, null=False)
+    price = models.DecimalField(max_digits=15, decimal_places=2)
+    creation_time = TimescaleDateTimeField(interval="1 day")
+    order_type = models.TextChoices('Buy', 'Sell')
+    objects = models.Manager()
+    timescale = TimescaleManager()
+
+    class Meta:
+        constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('initial_quantity')), name='valid_buy_state_check')]
+
+
+class LockedAtomicTransaction(Atomic):
+    """
+    Does a atomic transaction, but also locks the entire table for any transactions, for the duration of this
+    transaction. Although this is the only way to avoid concurrency issues in certain situations, it should be used with
+    caution, since it has impacts on performance, for obvious reasons...
+    Usage:
+        # ModelsToLock = [ModelA, ModelB, ....]
+        with LockedAtomicTransaction(ModelsToLock):
+            # do whatever you want to do
+            ModelA.objects.create()
+    """
+    def __init__(self, models, using=None, savepoint=None):
+        if using is None:
+            using = DEFAULT_DB_ALIAS
+        super().__init__(using, savepoint)
+        self.models = models
+
+    def __enter__(self):
+        super(LockedAtomicTransaction, self).__enter__()
+        cursor = None
+        try:
+            cursor = get_connection(self.using).cursor()
+            model_names = [model._meta.db_table for model in self.models]
+            cursor.execute(f"LOCK TABLE {', '.join(model_names)};")
+        finally:
+            if cursor and not cursor.closed:
+                cursor.close()

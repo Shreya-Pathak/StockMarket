@@ -8,9 +8,23 @@ from crispy_forms.layout import Layout, Submit, Row, Column, Reset, Fieldset
 numeric = RegexValidator(r'^[0-9]+$', 'Only digit characters.')
 decimals = RegexValidator(r'^\d+[.,]?\d*$|^\d*[.,]?\d+$', 'Only decimal numbers.')
 
+
 class SignUpForm(forms.Form):
-    name = forms.CharField(max_length=30, required=False, help_text='Optional.')
-    address = forms.CharField(max_length=30, required=False, help_text='Optional.')
-    telephone = forms.CharField(max_length=30, required=False, help_text='Optional.')
-    email = forms.CharField(max_length=30, required=False, help_text='Optional.')
-    account_number = forms.CharField(max_length=30, required=False, help_text='Optional.', validators=[numeric])
+    email = forms.EmailField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))
+    password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={'placeholder': 'Required'}))
+    name = forms.CharField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))
+    address = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+    telephone = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))
+    password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={'placeholder': 'Required'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.layout = Layout('username', 'password', Submit('submit', 'Login', css_class='btn btn-primary'))

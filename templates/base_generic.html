@@ -1,59 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <style>
-.navbarul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid #e7e7e7;
-  background-color: #f3f3f3;
-}
-
-.navbarli {
-  float: left;
-}
-
-.navbara {
-  display: block;
-  color: #666;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
-
-li a:hover:not(.active) {
-  background-color: #ddd;
-}
-
-li a.active {
-  color: white;
-  background-color: #4CAF50;
-}
-</style>
-  {% block title %}<title>Local Library</title>{% endblock %}
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <!-- Add additional CSS in static file -->
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body style="padding: 10px">
-  <div class="container-fluid">
-    <div style="padding-bottom: 2%">
-      {% block sidebar %}
-
-        <ul class="sidebar-nav">
-          <li><a href="{% url 'index' %}">Home</a></li>
-          <li><a href="">All books</a></li>
-          <li><a href="">All authors</a></li>
-        </ul>
-     {% endblock %}
-   </div>
-      <div align="center">{% block content %}{% endblock %}</div>
-    
-  </div>
-</body>
+    <head>
+        <style>
+        .navbarul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid #e7e7e7;
+            background-color: #f3f3f3;
+        }
+        .navbarli {
+            float: left;
+        }
+        .navbara {
+            display: block;
+            color: #666;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        li a:hover:not(.active) {
+            background-color: #ddd;
+        }
+        li a.active {
+            color: white;
+            background-color: #4CAF50;
+        }
+        </style>
+        {% block title %}
+        <title>
+            Local Library
+        </title>
+        {% endblock %}
+        <meta charset="utf-8">
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+                <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet">
+                    <!-- Add additional CSS in static file -->
+                    {% load static %}
+                    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <body style="padding: 10px">
+        <div class="container-fluid">
+            <div style="padding-bottom: 2%">
+                {% block client_sidebar %}
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{% url 'client_home' %}">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'client_login' %}">
+                            Login
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'client_signup' %}">
+                            Sign Up
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'client_logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+                {% endblock %}
+                {% block broker_sidebar %}
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="{% url 'broker_home' %}">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'broker_login' %}">
+                            Login
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'broker_signup' %}">
+                            Sign Up
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'broker_logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+            <div align="center">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </body>
 </html>

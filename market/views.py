@@ -9,24 +9,33 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 # Create your views here.
-def index(request):
-    return HttpResponseRedirect('/signup')
-
-def dictfetchall(cursor):
-    "Returns all rows from a cursor as a dict"
-    desc = cursor.description
-    return [dict(zip([col[0] for col in desc], row)) for row in cursor.fetchall()]
+def index_view(request):
+    return HttpResponseRedirect('stocklist')
 
 
-def stockList(request):
-    def req_join():
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT ticker, name, J1.eid as id, (SELECT price FROM market_Pricehistory as ph WHERE ph.eid=J1.eid and ph.ticker=ticker ORDER BY creation_time DESC LIMIT 1) as latestprice FROM (market_Listedat join market_Stock using(ticker)) as J1 join market_Exchange on (J1.eid=market_exchange.id) order by ticker;")
-            row = dictfetchall(cursor)
-        return row
+def custom_query(query, format_vars=None):
+    "executes ssql query and returns each row as a dict"
+    if not query.endswith(';'):
+        query += ';'
+    with connection.cursor() as cursor:
+        cursor.execute(query, format_vars)
+        columns = [col[0] for col in cursor.description]
+        rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return rows
 
-    StockLt = req_join()
+
+def stocklist_view(request):
+    StockLt = custom_query("""
+    SELECT ticker, name, J1.eid AS id,
+    (SELECT price FROM market_StockPriceHistory AS ph
+    WHERE ph.eid = J1.eid AND ph.sid = sid
+    ORDER BY creation_time DESC LIMIT 1) AS latestprice
+    FROM (market_ListedAt JOIN market_Stock USING (sid)) AS J1
+    JOIN market_Exchange ON (J1.eid = market_exchange.eid)
+    ORDER BY ticker;""")
+
     if request.method == 'POST':
         form = allforms.SorterForm(request.POST)
         context = {'cur': 'Ticker', 'form': form, 'data': StockLt}
@@ -52,14 +61,11 @@ def stockList(request):
         return render(request, 'stocklist.html', context)
 
 
-def analysis(request, tick, eid):
-    def req_join():
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT price, creation_time FROM market_Pricehistory as ph WHERE ph.eid=%s and ph.ticker=%s ORDER BY creation_time;", [eid, tick])
-            row = dictfetchall(cursor)
-        return row
-
-    ph = req_join()
+def analysis_view(request, sid, eid):
+    ph = custom_query("""
+        SELECT price, creation_time FROM market_StockPricehistory as ph 
+        WHERE ph.eid=%s and ph.sid=%s ORDER BY creation_time;""", [eid, sid])
+    
     price = [d['price'] for d in ph]
     tsz = [d['creation_time'] for d in ph]
     dates = matplotlib.dates.date2num(tsz)
