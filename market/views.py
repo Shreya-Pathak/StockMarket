@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Create your views here.
-
+def index(request):
+    return HttpResponseRedirect('/signup')
 
 def dictfetchall(cursor):
     "Returns all rows from a cursor as a dict"
