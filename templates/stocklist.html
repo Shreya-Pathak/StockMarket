@@ -82,12 +82,10 @@
 {% endblock %}
 
 {% block sidebar %}
- <ul class="sidebar-nav">
-          <li><a href="{% url 'index'%}">Home</a>
-            <ul>
-                <li><a href="{% url 'index' %}"> One</a></li>
-            </ul>
-          </li>
-          <li><a href="{% url 'stocklist'%}">Stock Listings</a></li>
-          </ul>
+<ul class="navbarul">
+  <li class="navbarli"><a class=" navbara active" href="#home">Home</a></li>
+  <li class="navbarli"><a class="navbara" href="#news">News</a></li>
+  <li class="navbarli"><a class="navbara" href="#contact">Contact</a></li>
+  <li class="navbarli"><a class="navbara" href="#about">About</a></li>
+</ul>
      {% endblock %}
