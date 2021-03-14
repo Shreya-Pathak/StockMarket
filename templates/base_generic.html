@@ -48,6 +48,7 @@
         <div class="container-fluid">
             <div style="padding-bottom: 2%">
                 {% block client_sidebar %}
+                {% block client_loggedout %}
                 <ul class="navbarul">
                     <li class="navbarli">
                         <a class="navbara" href="{% url 'client_home' %}">
@@ -65,18 +66,39 @@
                         </a>
                     </li>
                     <li class="navbarli">
-                        <a class="navbara" href="{% url 'client_logout' %}">
-                            Logout
-                        </a>
-                    </li>
-                    <li class="navbarli">
                         <a class="navbara" href="{% url 'broker_login' %}">
                             Broker Login
                         </a>
                     </li>
                 </ul>
                 {% endblock %}
+                {% block clientloggedin_bar %}
+                <ul class="navbarul">
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'client_home' %}">
+                            Home
+                        </a>
+                    </li>
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'client_login' %}">
+                            Portfolio
+                        </a>
+                    </li>
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'stocklist' 1 %}">
+                            Stock Listings
+                        </a>
+                    </li>
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'client_logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+                {% endblock %}
+                {% endblock %}
                 {% block broker_sidebar %}
+                {% block broker_loggedout %}
                 <ul class="navbarul">
                     <li class="navbarli">
                         <a class="navbara" href="{% url 'broker_home' %}">
@@ -94,16 +116,36 @@
                         </a>
                     </li>
                     <li class="navbarli">
-                        <a class="navbara" href="{% url 'broker_logout' %}">
-                            Logout
-                        </a>
-                    </li>
-                    <li class="navbarli">
                         <a class="navbara" href="{% url 'client_login' %}">
                             Client Login
                         </a>
                     </li>
                 </ul>
+                {% endblock %}
+                {% block brokerloggedin_bar %}
+                <ul class="navbarul">
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'broker_home' %}">
+                            Home
+                        </a>
+                    </li>
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'broker_home' %}">
+                            My Orders
+                        </a>
+                    </li>
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'stocklist' 0 %}">
+                            Stock Listings
+                        </a>
+                    </li>
+                    <li class="navbarli">
+                        <a class="navbara" href="{% url 'broker_logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+                {% endblock %}
                 {% endblock %}
             </div>
             <div align="center">

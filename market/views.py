@@ -26,7 +26,7 @@ def custom_query(query, format_vars=None):
     return rows
 
 
-def stocklist_view(request):
+def stocklist_view(request,client=0):
     StockLt = custom_query("""
     SELECT ticker, name, J1.eid AS id,
     (SELECT price FROM market_StockPriceHistory AS ph
@@ -53,12 +53,18 @@ def stocklist_view(request):
             elif context['cur'] == 'Latest Price':
                 data = sorted(data, key=itemgetter('latestprice'))
             context['data'] = data
-        return render(request, 'stocklist.html', context)
+            if client==0:
+                return render(request, 'broker/stocklist.html', context)
+            else:
+                return render(request, 'client/stocklist.html', context)
     else:
         form = allforms.SorterForm()
         data = StockLt
         context = {'cur': 'Ticker', 'form': form, 'data': data}
-        return render(request, 'stocklist.html', context)
+        if client==0:
+            return render(request, 'broker/stocklist.html', context)
+        else:
+            return render(request, 'client/stocklist.html', context)
 
 
 def analysis_view(request, sid, eid):
