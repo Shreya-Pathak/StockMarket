@@ -42,14 +42,13 @@ class Person(models.Model):
 
 class Client(models.Model):
     clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
-    email = models.TextField(blank=False, null=False)
+    email = models.TextField(unique=True, blank=False, null=False)
 
 
 class Broker(models.Model):
     bid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='bid')
-    email = models.TextField(blank=False, null=False)
+    email = models.TextField(unique=True, blank=False, null=False)
     commission = models.DecimalField(max_digits=15, decimal_places=2)
-    latency = models.DecimalField(max_digits=15, decimal_places=2)
 
 
 class Portfolio(models.Model):

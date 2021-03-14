@@ -1,33 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <style>
-        .navbarul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            border: 1px solid #e7e7e7;
-            background-color: #f3f3f3;
-        }
-        .navbarli {
-            float: left;
-        }
-        .navbara {
-            display: block;
-            color: #666;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none;
-        }
-        li a:hover:not(.active) {
-            background-color: #ddd;
-        }
-        li a.active {
-            color: white;
-            background-color: #4CAF50;
-        }
-        </style>
+        {% load static %}
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"></link>
+        <link href="{% static 'css/styles.css' %}" rel="stylesheet"></link>
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        
         {% block title %}
         <title>
             Local Library
@@ -35,15 +14,10 @@
         {% endblock %}
         <meta charset="utf-8">
             <meta content="width=device-width, initial-scale=1" name="viewport">
-                <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet">
-                    <!-- Add additional CSS in static file -->
-                    {% load static %}
-                    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
-                    </link>
-                </link>
             </meta>
         </meta>
     </head>
+    {% include 'message.html' %}
     <body style="padding: 10px">
         <div class="container-fluid">
             <div style="padding-bottom: 2%">
@@ -153,5 +127,13 @@
                 {% endblock %}
             </div>
         </div>
+        {% if messages %}
+        <script>
+            var alertList = document.querySelectorAll('.alert');
+                alertList.forEach(function (alert) {
+                    new bootstrap.Alert(alert);
+                })
+        </script>
+        {% endif %}
     </body>
 </html>
