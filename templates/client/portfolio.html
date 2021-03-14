@@ -37,7 +37,9 @@
 .styled-table tbody tr:last-of-type {
     border-bottom: 0px solid #009879;
 }
-
+.with-margin {
+  margin-bottom: 2%;
+}
 </style>
 {% for k,v in data.items %}
 <h2>
@@ -70,12 +72,10 @@
             {% endfor %}
         </table>
 {% endfor %}
-<table class="styled-table" style="box-shadow: 0 0 0">
-	<tr class="baseclass">
-		<div class="container" >
-
-			
-		<td align="center" class="baseclass" >
+	
+		
+<br>
+		<div class="container col-lg-4">	
 			<form method="POST">
                 {%csrf_token%}
                 
@@ -85,14 +85,12 @@
                    
 					    </form>
 			
-                   </td>
-               
+            </div>
+    
 				
-				</div>
+				
 		    
 	
-</tr>
-</table>
 
 {% endblock %}
 

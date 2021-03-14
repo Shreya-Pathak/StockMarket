@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Reset, Fieldset
+from crispy_forms.layout import Layout, Submit, Row, Column, Reset, Fieldset, Div
 
 numeric = RegexValidator(r'^[0-9]+$', 'Only digit characters.')
 decimals = RegexValidator(r'^\d+[.,]?\d*$|^\d*[.,]?\d+$', 'Only decimal numbers.')
@@ -44,7 +44,7 @@ class PortfolioForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
-        self.helper.label_class = 'col-lg-6'
+        self.helper.label_class = 'col-lg-4'
         self.fields['pname'].label='Portfolio Name'
         self.helper.field_class = 'col-lg-6'
-        self.helper.layout = Layout('pname', Submit('submit', 'Add Portfolio', css_class='btn btn-primary'))
+        self.helper.layout = Layout(Div('pname',css_class='with-margin'), Submit('submit', 'Add Portfolio', css_class='btn btn-primary'))
