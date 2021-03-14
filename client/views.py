@@ -5,9 +5,18 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import client.forms as forms
 import market.models as models
+from django.contrib import messages
+
+
+def check_user(request):
+    if not request.user.is_authenticated:
+        return False
+    if not models.Client.objects.filter(email=request.user.email).exists():
+        messages.warning(request, 'You do not have access to this page.')
+        return True
+    return False
 
 # Create your views here.
-
 
 def index_view(request):
     if request.user.is_authenticated:
@@ -65,27 +74,4 @@ def home_view(request):
 
 
 def portfolio_view(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect('login')
-    if request.method == 'POST':
-        formdata = forms.PortfolioForm(request.POST)
-        if formdata.is_valid():
-            newname=formdata.cleaned_data['pname']
-            print(newname)
-            newportfolio=models.Portfolio(pname=newname,clid=models.Client.objects.filter(clid=2)[0])
-            newportfolio.save()
-    all_folios=models.Portfolio.objects.all().filter(clid=2).order_by('pname')
-    data={}
-    for i in all_folios:
-        stock_folio=models.Holdings.objects.filter(folio_id_id=i.folio_id)
-        stock_list=[]
-        for j in stock_folio:
-            st_name=models.Stock.objects.filter(pk=j.sid_id)[0].ticker
-            stock_list.append([j,st_name])
-        data[i.pname]=stock_list
-    print(data.keys())
-    form=forms.PortfolioForm()
-
-        
-    context={'data':data, 'form':form}
-    return render(request, 'client/portfolio.html',context)    
+    pass  
