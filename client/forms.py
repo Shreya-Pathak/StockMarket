@@ -16,6 +16,14 @@ class SignUpForm(forms.Form):
     address = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
     telephone = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.layout = Layout('email', 'password','name','address','telephone', Submit('submit', 'Sign Up', css_class='btn btn-primary'))
+
 
 class LoginForm(forms.Form):
     username = forms.CharField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))

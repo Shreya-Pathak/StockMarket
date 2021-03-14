@@ -1,33 +1,24 @@
 {% extends 'base_generic.html' %}
-
+{% load crispy_forms_tags %} 
 {% block content %}
-<h2>
-    Sign up
-</h2>
-<form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-    <p>
-        {{ field.label_tag }}
-        <br>
-            {{ field }}
-            {% if field.help_text %}
-            <small style="color: grey">
-                {{ field.help_text }}
-            </small>
-            {% endif %}
-            {% for error in field.errors %}
-            <p style="color: red">
-                {{ error }}
-            </p>
-            {% endfor %}
-        </br>
-    </p>
-    {% endfor %}
-    <button type="submit">
-        Sign up
-    </button>
-</form>
+<style>
+    input {
+        max-width: 12em;
+        margin: 5px;
+    }
+</style>
+<div>
+    <center>
+        <fieldset class="border p-2" style="width: 45em">
+            <legend class="w-auto">
+                Client Signup
+            </legend>
+            <form method="post">
+                {% csrf_token %} {% crispy form %}
+            </form>
+        </fieldset>
+    </center>
+</div>
 {% endblock %}
 
 {% block broker_sidebar %}

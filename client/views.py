@@ -24,7 +24,7 @@ def signup_view(request):
             email = form.cleaned_data.get('email')
             person = models.Person(name=form.cleaned_data.get('name'), address=form.cleaned_data.get('address'), telephone=form.cleaned_data.get('telephone'))
             person.save()
-            client = models.Client(bid=person, email=email)
+            client = models.Client(clid=person, email=email)
             client.save()
             user = User.objects.create_user(username=email.split('@')[0], password=form.cleaned_data.get('password'))
             user.save()
