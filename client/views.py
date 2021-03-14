@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 import client.forms as forms
 import market.models as models
 
@@ -61,3 +62,19 @@ def home_view(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('login')
     return render(request, 'client/home.html')
+
+
+def portfolio_view(request,clid):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('login')
+    all_folios=models.Portfolio.objects.all().filter(clid=clid).order_by('pname')
+    data={}
+    for i in all_folios:
+        stock_folio=models.Holdings.objects.filter(folio_id_id=i.folio_id)
+        stock_list=[]
+        for j in stock_folio:
+            st_name=models.Stock.objects.filter(pk=j.sid_id)[0].ticker
+            stock_list.append([j,st_name])
+        data[i.pname]=stock_list
+    context={'data':data}
+    return render(request, 'client/portfolio.html',context)    

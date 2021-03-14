@@ -54,7 +54,7 @@ class Broker(models.Model):
 
 class Portfolio(models.Model):
     folio_id = models.AutoField(primary_key=True, db_column='folio_id')
-    clid = models.OneToOneField(Client, models.DO_NOTHING, db_column='clid')
+    clid = models.ForeignKey(Client, models.DO_NOTHING, db_column='clid')
     pname = models.TextField(blank=False, null=False)
 
     class Meta:
@@ -63,7 +63,7 @@ class Portfolio(models.Model):
 
 class Wishlist(models.Model):
     wish_id = models.AutoField(primary_key=True, db_column='wish_id')
-    clid = models.OneToOneField(Client, models.DO_NOTHING, db_column='clid')
+    clid = models.ForeignKey(Client, models.DO_NOTHING, db_column='clid')
     wname = models.TextField(blank=False, null=False)
 
     class Meta:
@@ -122,7 +122,7 @@ class IndexPriceHistory(models.Model):
 
 class PartOfIndex(models.Model):
     partof_id = models.AutoField(primary_key=True, db_column='partof_id')
-    sid = models.OneToOneField(Stock, models.DO_NOTHING, db_column='sid')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
     iid = models.ForeignKey(Indices, models.DO_NOTHING, db_column='iid')
 
     class Meta:
@@ -140,7 +140,7 @@ class StockWishlist(models.Model):
 
 class Recommendation(models.Model):
     rec_id = models.AutoField(primary_key=True, db_column='rec_id')
-    bid = models.OneToOneField(Broker, models.DO_NOTHING, db_column='bid')
+    bid = models.ForeignKey(Broker, models.DO_NOTHING, db_column='bid')
     sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
 
     class Meta:
@@ -149,7 +149,7 @@ class Recommendation(models.Model):
 
 class RegisteredAt(models.Model):
     reg_id = models.AutoField(primary_key=True, db_column='reg_id')
-    bid = models.OneToOneField(Broker, models.DO_NOTHING, db_column='bid')
+    bid = models.ForeignKey(Broker, models.DO_NOTHING, db_column='bid')
     eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
 
     class Meta:

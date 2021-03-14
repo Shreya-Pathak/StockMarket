@@ -8,4 +8,7 @@ urlpatterns = [
     path('login', views.login_view, name='client_login'),
     path('home', views.home_view, name='client_home'),
     path('logout', views.logout_view, name='client_logout'),
+    path('portfolio', views.portfolio_view, name='client_portfolio'),
+    path('portfolio/<int:clid>', views.portfolio_view, name='client_portfolio'),
+
 ]

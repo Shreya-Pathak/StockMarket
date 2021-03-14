@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db import connection
+from django.contrib.auth.decorators import login_required
 from operator import itemgetter
 import market.forms as allforms
 from io import BytesIO
