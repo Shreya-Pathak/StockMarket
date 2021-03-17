@@ -4,6 +4,9 @@ from django.db.transaction import Atomic, get_connection
 from timescale.db.models.fields import TimescaleDateTimeField
 from timescale.db.models.managers import TimescaleManager
 
+class OType(models.TextChoices):
+        BUY='buy'
+        SELL='sell'
 
 class Stock(models.Model):
     sid = models.AutoField(primary_key=True, db_column='sid')
@@ -173,7 +176,7 @@ class OldOrder(models.Model):
     sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
     quantity = models.IntegerField(blank=False, null=False)
     price = models.DecimalField(max_digits=15, decimal_places=2)
-    order_type = models.TextChoices('Buy', 'Sell')
+    order_type = models.TextField(choices=OType.choices,default='Buy')
     creation_time = TimescaleDateTimeField(interval="1 day")
     objects = models.Manager()
     timescale = TimescaleManager()
@@ -189,7 +192,8 @@ class BuySellOrder(models.Model):
     completed_quantity = models.IntegerField(blank=False, null=False)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     creation_time = TimescaleDateTimeField(interval="1 day")
-    order_type = models.TextChoices('Buy', 'Sell')
+    order_type = models.TextField(choices=OType.choices,default='Buy')
+    # order_type = models.TextChoices('Buy', 'Sell')
     objects = models.Manager()
     timescale = TimescaleManager()
 
