@@ -195,7 +195,7 @@ class BuySellOrder(models.Model):
     timescale = TimescaleManager()
 
     class Meta:
-        constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('initial_quantity')), name='valid_buy_state_check')]
+        constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buy_state_check')]
 
 
 class LockedAtomicTransaction(Atomic):
