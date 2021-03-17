@@ -58,6 +58,18 @@ def signup_view(request):
         form = forms.SignUpForm()
     return render(request, 'broker/signup.html', {'form': form})
 
+def order_view(request):
+    brid=models.Broker.objects.filter(email=request.user.email).all()[0]
+    regs=models.RegisteredAt.objects.filter(bid=brid).all()
+    oldorder=models.OldOrder.objects.filter(reg_id__in=regs).all()
+    currorder=models.BuySellOrder.objects.filter(bid=brid).all()
+    # print(oldorder[0].folio_id.clid.clid.name)
+    form=forms.SorterForm()
+    context={'oldorders':oldorder,'currorder':currorder,'form':form}
+    # print(context)
+    return render(request,'broker/myorders.html',context)
+
+
 
 def login_view(request):
     if check_user(request):
