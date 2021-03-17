@@ -48,3 +48,21 @@ class PortfolioForm(forms.Form):
         self.fields['pname'].label='Portfolio Name'
         self.helper.field_class = 'col-lg-6'
         self.helper.layout = Layout(Div('pname',css_class='with-margin'), Submit('submit', 'Add Portfolio', css_class='btn btn-primary'))
+
+class OrderForm(forms.Form):
+    folio_id = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Required'}))
+    bid = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Required'}))
+    eid = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Required'}))
+
+    type = forms.ChoiceField(required=True, choices=[('Buy', 'Buy'), ('Sell', 'Sell')], widget = forms.RadioSelect)
+    sid = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Required'}))
+    price = forms.FloatField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Required'}))
+    quantity = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'placeholder': 'Required'}))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-4'
+        self.helper.field_class = 'col-lg-6'
+        self.helper.layout = Layout('folio_id', 'bid','eid','type', 'sid','price', 'quantity', Submit('submit', 'PlaceOrder', css_class='btn btn-primary'))
+    

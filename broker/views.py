@@ -60,8 +60,8 @@ def signup_view(request):
 
 def order_view(request):
     brid=models.Broker.objects.filter(email=request.user.email).all()[0]
-    regs=models.RegisteredAt.objects.filter(bid=brid).all()
-    oldorder=models.OldOrder.objects.filter(reg_id__in=regs).all()
+    # regs=models.RegisteredAt.objects.filter(bid=brid).all()
+    oldorder=models.OldOrder.objects.filter(bid=brid).all()
     currorder=models.BuySellOrder.objects.filter(bid=brid).all()
     # print(oldorder[0].folio_id.clid.clid.name)
     form=forms.SorterForm()
