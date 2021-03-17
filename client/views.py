@@ -18,13 +18,6 @@ def check_user(request):
 
 # Create your views here.
 
-def check_user(request):
-    if not request.user.is_authenticated:
-        return False
-    if not models.Client.objects.filter(email=request.user.email).exists():
-        messages.warning(request, 'You do not have access to this page.')
-        return True
-    return False
 
 
 def index_view(request):
@@ -110,12 +103,15 @@ def portfolio_view(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('login')
     if request.method == 'POST':
-        print('lalalal')
+        # print('lalalal')
         
         formdata = forms.PortfolioForm(request.POST)
         if formdata.is_valid():
             newname=formdata.cleaned_data['pname']
-            print(request.user.email)
+            # print(request.user.email)
+            if models.Portfolio.objects.filter(pname=newname,clid=models.Client.objects.filter(email=request.user.email)[0]).exists():
+                messages.error(request, "Portfolio already exists.")
+                return HttpResponseRedirect('portfolio')
             newportfolio=models.Portfolio(pname=newname,clid=models.Client.objects.filter(email=request.user.email)[0])
             newportfolio.save()
     all_folios=models.Portfolio.objects.all().filter(clid__email=request.user.email).order_by('pname')
