@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import client.forms as forms
 import market.models as models
 from django.contrib import messages
-
+from django.utils import timezone
 
 def check_user(request):
     if not request.user.is_authenticated:
@@ -17,8 +17,6 @@ def check_user(request):
     return False
 
 # Create your views here.
-
-
 
 def index_view(request):
     if check_user(request):
@@ -127,3 +125,37 @@ def portfolio_view(request):
     context={'data':data, 'form':form}
     return render(request, 'client/portfolio.html',context)   
 
+def order_view(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('login')
+
+    print(request.method)
+
+    if request.method == 'POST':
+        print('Placing Order')
+        form = forms.OrderForm(request.POST)
+
+        print(form.is_valid())
+        
+        if form.is_valid():
+            folio_id = form.cleaned_data['folio_id']
+            bid   = form.cleaned_data['bid']
+            eid   = form.cleaned_data['eid']
+
+            type  = form.cleaned_data['type']
+            sid   = form.cleaned_data['sid']
+            price = form.cleaned_data['price']
+            quantity = form.cleaned_data['quantity']
+            print(folio_id, bid, eid, type, sid, price, quantity)
+            print(type)
+            neworder = models.BuySellOrder(folio_id=models.Portfolio.objects.get(folio_id = folio_id), 
+                                            bid=models.Broker.objects.get(bid=bid), 
+                                            eid=models.Exchange.objects.get(eid=eid),
+                                            sid=models.Stock.objects.get(sid=sid), 
+                                            quantity=quantity, completed_quantity=0, 
+                                            price=price, creation_time=timezone.now(), order_type=type)
+            neworder.save()
+            return HttpResponseRedirect('portfolio')
+    else:
+        form = forms.OrderForm()
+    return render(request, 'client/placeorder.html', {'form': form})
