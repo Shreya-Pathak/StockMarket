@@ -61,11 +61,44 @@ def signup_view(request):
 def order_view(request):
     brid=models.Broker.objects.filter(email=request.user.email).all()[0]
     # regs=models.RegisteredAt.objects.filter(bid=brid).all()
-    oldorder=models.OldOrder.objects.filter(bid=brid).all()
-    currorder=models.BuySellOrder.objects.filter(bid=brid).all()
+    oldorder=models.OldOrder.objects.filter(bid=brid)
+    currorder=models.BuySellOrder.objects.filter(bid=brid)
     # print(oldorder[0].folio_id.clid.clid.name)
-    form=forms.SorterForm()
-    context={'oldorders':oldorder,'currorder':currorder,'form':form}
+    formog=forms.SorterForm()
+
+    if request.method == 'POST':
+        form=forms.SorterForm(request.POST)
+        if form.is_valid():
+            sortfield = form.cleaned_data.get('sortfield')
+            order_type = form.cleaned_data.get('order_type')
+            ticker = form.cleaned_data.get('ticker')
+            exchange = form.cleaned_data.get('exchange')
+            client = form.cleaned_data.get('client')
+            if order_type!='All':
+                oldorder=oldorder.filter(order_type=order_type)
+                currorder=currorder.filter(order_type=order_type)
+                formog.fields['order_type'].initial=order_type
+            if sortfield!='None':
+                oldorder=oldorder.order_by(sortfield)
+                currorder=currorder.order_by(sortfield)
+                # chosenlabel=dict(formog.fields['sortfield'].widget.choices)[sortfield]
+                # ch=formog.fields['sortfield'].widget.choices
+                formog.fields['sortfield'].initial=sortfield
+            if ticker!='':
+                oldorder=oldorder.filter(sid__ticker__icontains=ticker)
+                currorder=currorder.filter(sid__ticker__icontains=ticker)
+            if exchange!='':
+                oldorder=oldorder.filter(eid__name__icontains=exchange)
+                currorder=currorder.filter(eid__name__icontains=exchange)
+            if client!='':
+                oldorder=oldorder.filter(folio_id__clid__clid__name__icontains=client)
+                currorder=currorder.filter(folio_id__clid__clid__name__icontains=client)
+
+
+    oldorder=oldorder.all()
+    currorder=currorder.all()
+    
+    context={'oldorders':oldorder,'currorder':currorder,'form':formog}
     # print(context)
     return render(request,'broker/myorders.html',context)
 

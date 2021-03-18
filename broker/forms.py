@@ -40,7 +40,7 @@ class LoginForm(forms.Form):
         self.helper.layout = Layout('username', 'password', Submit('submit', 'Login', css_class='btn btn-primary'))
 
 
-FRUIT_CHOICES = [('Price', 'Price'), ('Date', 'Date'), ('Quantity', 'Quantity')]
+FRUIT_CHOICES = [('None','None'),('price', 'Price'), ('creation_time','Date'), ('quantity', 'Quantity')]
 TYPE_CHOICES=[('All', 'All'), ('Buy', 'Buy'), ('Sell', 'Sell')]
 
 class SorterForm(forms.Form):
