@@ -73,7 +73,7 @@
                 </td>
                 <td>
                     <button class="btn btn-default" type="button">
-                        <a href="{% url 'analysis' r.ticker r.id %}">
+                        <a href="{% url 'analysis' r.sid r.id %}">
                             Price History
                         </a>
                     </button>
@@ -117,6 +117,20 @@
         </br>
     </center>
 </div>
+{% if prev_exists %}
+    <a href="{% url 'stocklist' 1 prev %}{{params}}">
+        <button class="btn btn-primary" name="previous"  >
+            Previous
+        </button>
+    </a>
+{% endif %}
+{% if next_exists %}
+    <a href="{% url 'stocklist' 1 next %}{{params}}">
+        <button class="btn btn-primary" name="next"  >
+            Next
+        </button>
+    </a>
+{% endif %}
 {% endblock %}
 
 {% block client_loggedout %}

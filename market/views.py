@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db import connection
 from django.contrib.auth.decorators import login_required
@@ -27,45 +27,79 @@ def custom_query(query, format_vars=None):
     return rows
 
 
-def stocklist_view(request,client=0):
+def stocklist_view(request,client=0,st=0):
+    PGSZ=2
+    exchange=request.GET.get('exchange', '')
+    ticker=request.GET.get('ticker', '')
+    order=request.GET.get('order', 'ticker')
+    # print('lel')
+    # print(ticker,end='***\n')
+    # print("""
+    # SELECT sid,ticker, name, J1.eid AS id,
+    # (SELECT price FROM market_StockPriceHistory AS ph
+    # WHERE ph.eid = J1.eid AND ph.sid = sid"""+
+    # """ ORDER BY creation_time DESC LIMIT 1) AS latestprice
+    # FROM (market_ListedAt JOIN market_Stock USING (sid)) AS J1
+    # JOIN market_Exchange ON (J1.eid = market_exchange.eid) WHERE """+ """name ilike '%"""+exchange+"""%' AND ticker ilike  '%"""+ticker
+    # +"""%' ORDER BY """+
+    #  order + """ OFFSET """+str(st*PGSZ)+""" LIMIT """+str(PGSZ+1)+""" ;""")
     StockLt = custom_query("""
-    SELECT ticker, name, J1.eid AS id,
+    SELECT sid,ticker, name, J1.eid AS id,
     (SELECT price FROM market_StockPriceHistory AS ph
-    WHERE ph.eid = J1.eid AND ph.sid = sid
-    ORDER BY creation_time DESC LIMIT 1) AS latestprice
+    WHERE ph.eid = J1.eid AND ph.sid = sid"""+
+    """ ORDER BY creation_time DESC LIMIT 1) AS latestprice
     FROM (market_ListedAt JOIN market_Stock USING (sid)) AS J1
-    JOIN market_Exchange ON (J1.eid = market_exchange.eid)
-    ORDER BY ticker;""")
+    JOIN market_Exchange ON (J1.eid = market_exchange.eid) WHERE """+ """name ilike '%"""+exchange+"""%' AND ticker ilike  '%"""+ticker
+    +"""%' ORDER BY """+
+     order + """ OFFSET """+str(st*PGSZ)+""" LIMIT """+str(PGSZ+1)+""" ;""")
+    if len(StockLt)!=PGSZ+1:
+        last=True
+    else:
+        last=False
+        StockLt=StockLt[:-1]
 
     if request.method == 'POST':
         form = allforms.SorterForm(request.POST)
-        context = {'cur': 'Ticker', 'form': form, 'data': StockLt}
+        # context = {'cur': 'Ticker', 'form': form, 'data': StockLt}
         if form.is_valid() and 'sfilt' in request.POST:
-            context['cur'] = form.cleaned_data['sortfield']  #string of number
+            sf = form.cleaned_data['sortfield']  #string of number
             tick = form.cleaned_data['ticker']
             exc = form.cleaned_data['exchange']
             data = StockLt
-            if len(tick) != 0:
-                data = [d for d in data if d['ticker'] == tick]
-            if len(exc) != 0:
-                data = [d for d in data if d['name'] == exc]
-            if context['cur'] == 'Exchange':
-                data = sorted(data, key=itemgetter('name'))
-            elif context['cur'] == 'Latest Price':
-                data = sorted(data, key=itemgetter('latestprice'))
-            context['data'] = data
+            order='ticker'
+            # if len(tick) != 0:
+            #     data = [d for d in data if d['ticker'] == tick]
+            # if len(exc) != 0:
+            #     data = [d for d in data if d['name'] == exc]
+            if sf == 'Exchange':
+                # data = sorted(data, key=itemgetter('name'))
+                order='name'
+            elif sf == 'Latest Price':
+                # data = sorted(data, key=itemgetter('latestprice'))
+                order='latestprice'
+            # context['data'] = data
             if client==0:
-                return render(request, 'broker/stocklist.html', context)
+                return redirect('/market/stocklist/0/0/?exchange='+exc+'&ticker='+tick+'&order='+order)
             else:
-                return render(request, 'client/stocklist.html', context)
+                # return render(request, 'client/stocklist.html', context)
+                return redirect('/market/stocklist/1/0/?exchange='+exc+'&ticker='+tick+'&order='+order)
     else:
         form = allforms.SorterForm()
         data = StockLt
-        context = {'cur': 'Ticker', 'form': form, 'data': data}
+        context = {'cur': order, 'form': form, 'data': data}
+        paramstr="""?exchange="""+exchange+'&ticker='+ticker+'&order='+order
+        context['params']=paramstr
+        if st!=0:
+            context['prev_exists']=True
+            context['prev']=st-1
+        if not(last):
+            context['next_exists']=True
+            context['next']=st+1
         if client==0:
             return render(request, 'broker/stocklist.html', context)
         else:
             return render(request, 'client/stocklist.html', context)
+
 
 
 def analysis_view(request, sid, eid):
