@@ -1,0 +1,93 @@
+{% extends 'base_generic.html' %} 
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js">
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js">
+</script>
+<style type="text/css">
+.container {
+  width: 80%;
+  height: 500px;
+  margin: auto;
+  padding: 10px;
+}
+
+.one {
+  width: 40%;
+  height: 500px;
+  float: left;
+}
+
+.two {
+  margin-left: 15%;
+  height: 500px;
+} 
+	.buttonimg{
+    width:auto;
+    height:auto;
+}
+.btn-group button {
+  background-color: #4CAF50; /* Green background */
+  border: 1px solid green; /* Green border */
+  color: white; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+}
+
+/* Clear floats (clearfix hack) */
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #3e8e41;
+}
+</style>
+<script>
+function norm()
+    {
+      console.log("help");
+    document.getElementById('theImage').src="{{ cp }}";
+    }
+function ma5()
+    {
+      console.log("hereeee");
+    document.getElementById('theImage').src="{{ ma }}}";
+    }
+function ma10()
+    {
+    document.getElementById('theImage').src="{{ ma1 }}}";
+    }
+</script>
+<section class="container">
+<div class="one"><img src="{{ data }}" alt="" height="450" width="450" /></div>
+
+<div class="two"><div class="buttonimg">
+<img id='theImage' src="{{ cp }}" alt="" height="450" width="450" />
+<br>
+<div class="btn-group">
+  <button type="button" onclick="norm()">Closing Price</button>
+  <button type="button" onclick="ma5()">Moving Avg(5)</button>
+  <button onclick="ma10()">Moving Avg(10)</button>
+</div>
+</div>
+</div>
+</section>
+
+{% endblock %} 
+
+{% block client_loggedout %}
+{% endblock %}
+{% block broker_sidebar %}
+{% endblock %}
