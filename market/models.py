@@ -200,6 +200,17 @@ class BuySellOrder(models.Model):
     class Meta:
         constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buy_state_check')]
 
+class MarketStocklists(models.Model):
+    sid = models.IntegerField(blank=True, null=True)
+    ticker = models.TextField(blank=True, null=True)
+    name = models.TextField(blank=True, null=True)
+    eid = models.IntegerField(blank=True, null=True)
+    latestprice = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+
+
+    class Meta:
+        managed = False  # Created from a view. Don't remove.
+        db_table = 'market_stocklists'
 
 class LockedAtomicTransaction(Atomic):
     """
