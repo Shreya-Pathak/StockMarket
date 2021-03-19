@@ -4,14 +4,12 @@ from django.db.transaction import Atomic, get_connection
 from timescale.db.models.fields import TimescaleDateTimeField
 from timescale.db.models.managers import TimescaleManager
 
-class OType(models.TextChoices):
-        BUY='buy'
-        SELL='sell'
 
 class Stock(models.Model):
     sid = models.AutoField(primary_key=True, db_column='sid')
     ticker = models.TextField(unique=True)
-    total_stocks = models.IntegerField(blank=False, null=False)
+    total_stocks = models.BigIntegerField(blank=False, null=False)
+    last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
 
 class Exchange(models.Model):
@@ -22,18 +20,30 @@ class Exchange(models.Model):
 class Indices(models.Model):
     iid = models.AutoField(primary_key=True, db_column='iid')
     eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
-    index_name = models.TextField(blank=False, null=False)
+    index_name = models.TextField(unique=True, blank=False, null=False)
+    ticker = models.TextField(unique=True, blank=False, null=False)
+    last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+
+    # base_divisor = models.DecimalField(max_digits=15, decimal_places=4, default=100)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['eid', 'index_name'], name='unique_index_exchange')]
 
 
 class Company(models.Model):
-    cid = models.AutoField(primary_key=True, db_column='cid')
-    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    cid = models.OneToOneField(Stock, models.DO_NOTHING, primary_key=True, db_column='cid')
     name = models.TextField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     country = models.TextField(blank=True, null=True)
+    logo = models.TextField(blank=False, null=False, default='https://logo.clearbit.com/clearbit.com')
+    zipcode = models.TextField(blank=True, null=True)
+    sector = models.TextField(blank=True, null=True)
+    summary = models.TextField(blank=True, null=True)
+    city = models.TextField(blank=True, null=True)
+    phone = models.TextField(blank=True, null=True)
+    website = models.TextField(blank=True, null=True)
+    employees = models.IntegerField(blank=True, null=True)
+    industry = models.TextField(blank=True, null=True)
 
 
 class Person(models.Model):
@@ -45,11 +55,13 @@ class Person(models.Model):
 
 class Client(models.Model):
     clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     email = models.TextField(unique=True, blank=False, null=False)
 
 
 class Broker(models.Model):
     bid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='bid')
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     email = models.TextField(unique=True, blank=False, null=False)
     commission = models.DecimalField(max_digits=15, decimal_places=2)
 
@@ -73,7 +85,7 @@ class Wishlist(models.Model):
 
 
 class BankAccount(models.Model):
-    account_number = models.IntegerField(primary_key=True, db_column='account_number')
+    account_number = models.BigIntegerField(primary_key=True, db_column='account_number')
     pid = models.ForeignKey(Person, models.DO_NOTHING, default=0, db_column='pid')
     balance = models.DecimalField(max_digits=15, decimal_places=2)
 
@@ -99,15 +111,9 @@ class StockPriceHistory(models.Model):
     objects = models.Manager()
     timescale = TimescaleManager()
 
-    # add trigger logic for adding to IndexPriceHistory
-    def save(self, *args, **kwargs):
-        # do stuff with self.sttributes
-        super().save(*args, **kwargs)  # Call the "real" save() method.
-
-    # do stuff
-
     class Meta:
         constraints = [models.UniqueConstraint(fields=['sid', 'eid', 'creation_time', 'price'], name='stock_price_pkey')]
+        get_latest_by = 'creation_time'
 
 
 class IndexPriceHistory(models.Model):
@@ -120,6 +126,7 @@ class IndexPriceHistory(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['iid', 'creation_time', 'price'], name='index_price_pkey')]
+        get_latest_by = 'creation_time'
 
 
 class PartOfIndex(models.Model):
@@ -178,7 +185,7 @@ class OldOrder(models.Model):
     quantity = models.IntegerField(blank=False, null=False)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     creation_time = TimescaleDateTimeField(interval="1 day")
-    order_type = models.TextField(blank=False, choices=[('Buy','Buy'), ('Sell', 'Sell')])
+    order_type = models.TextField(blank=False, choices=[('Buy', 'Buy'), ('Sell', 'Sell')])
     objects = models.Manager()
     timescale = TimescaleManager()
 
@@ -193,12 +200,13 @@ class BuySellOrder(models.Model):
     completed_quantity = models.IntegerField(blank=False, null=False)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     creation_time = TimescaleDateTimeField(interval="1 day")
-    order_type = models.TextField(blank=False, choices=[('Buy','Buy'), ('Sell', 'Sell')])
+    order_type = models.TextField(blank=False, choices=[('Buy', 'Buy'), ('Sell', 'Sell')])
     objects = models.Manager()
     timescale = TimescaleManager()
 
     class Meta:
         constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buy_state_check')]
+
 
 class MarketStocklists(models.Model):
     sid = models.IntegerField(blank=True, null=True)
@@ -207,22 +215,22 @@ class MarketStocklists(models.Model):
     eid = models.IntegerField(blank=True, null=True)
     latestprice = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
 
-
     class Meta:
         managed = False  # Created from a view. Don't remove.
         db_table = 'market_stocklists'
 
+
 class LockedAtomicTransaction(Atomic):
     """
-    Does a atomic transaction, but also locks the entire table for any transactions, for the duration of this
-    transaction. Although this is the only way to avoid concurrency issues in certain situations, it should be used with
-    caution, since it has impacts on performance, for obvious reasons...
-    Usage:
-        # ModelsToLock = [ModelA, ModelB, ....]
-        with LockedAtomicTransaction(ModelsToLock):
-            # do whatever you want to do
-            ModelA.objects.create()
-    """
+	Does a atomic transaction, but also locks the entire table for any transactions, for the duration of this
+	transaction. Although this is the only way to avoid concurrency issues in certain situations, it should be used with
+	caution, since it has impacts on performance, for obvious reasons...
+	Usage:
+		# ModelsToLock = [ModelA, ModelB, ....]
+		with LockedAtomicTransaction(ModelsToLock):
+			# do whatever you want to do
+			ModelA.objects.create()
+	"""
     def __init__(self, models, using=None, savepoint=None):
         if using is None:
             using = DEFAULT_DB_ALIAS
