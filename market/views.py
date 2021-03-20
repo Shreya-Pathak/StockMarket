@@ -82,6 +82,7 @@ def stocklist_view(request, client=0, st=0):
             return redirect(f'/market/stocklist/{client}/1/?exchange=' + exc + '&ticker=' + tick + '&order=' + order)
     else:
         form = allforms.SorterForm()
+        form['sortfield'].initial='Ticker' if order=='ticker' else ('Exchange' if order=='name' else 'Latest Price')
         data = StockLt
         context = {'cur': order, 'form': form, 'data': data}
         paramstr = """?exchange=""" + exchange + '&ticker=' + ticker + '&order=' + order
