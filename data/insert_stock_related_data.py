@@ -81,7 +81,7 @@ def get_index_data():
         if index not in index_exchange.keys():
             composition.pop(index, None)
 
-    exchanges = list(exchanges)
+    exchanges = sorted(list(exchanges))
     return exchanges, composition, index_exchange, stock_listed_at
 
 
@@ -131,7 +131,7 @@ def insert_exchanges_indices_partof_listedat():
 
     indices = []
     indices_map = {}
-    for index, ex in index_exchange.items():
+    for index, ex in sorted(index_exchange.items()):
         idx = models.Indices(eid=exchange_map[ex], index_name=index, ticker=index_tickers[index])
         indices.append(idx)
         indices_map[index] = idx
@@ -157,7 +157,7 @@ def insert_exchanges_indices_partof_listedat():
     models.ListedAt.objects.bulk_create(listedats)
 
     partofs = []
-    for index, tickers in composition.items():
+    for index, tickers in sorted(composition.items()):
         idx = indices_map[index]
         for ticker in set(tickers):
             if ticker not in ticker_id.keys():
