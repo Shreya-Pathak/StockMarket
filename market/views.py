@@ -3,14 +3,17 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.db import connection
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count, F, Value
 from operator import itemgetter
 import market.forms as allforms
-from io import BytesIO
+from io import BytesIO, StringIO
 import base64, urllib
 import matplotlib
+from matplotlib import style
 import matplotlib.pyplot as plt
 import numpy as np
 from . import models
+
 
 # Create your views here.
 def index_view(request):
@@ -28,13 +31,13 @@ def custom_query(query, format_vars=None):
     return rows
 
 
-def stocklist_view(request,client=0,st=0):
-    PGSZ=2
-    exchange=request.GET.get('exchange', '')
-    ticker=request.GET.get('ticker', '')
-    order=request.GET.get('order', 'ticker')
-    if st==0:
-        st+=1
+def stocklist_view(request, client=0, st=0):
+    PGSZ = 2
+    exchange = request.GET.get('exchange', '')
+    ticker = request.GET.get('ticker', '')
+    order = request.GET.get('order', 'sid__ticker')
+    if st == 0:
+        st += 1
     # StockLt = custom_query("""
     # SELECT sid,ticker, name, J1.eid AS id,
     # (SELECT price FROM market_StockPriceHistory AS ph
@@ -56,68 +59,58 @@ def stocklist_view(request,client=0,st=0):
     # else:
     #     last=False
     #     StockLt=StockLt[:-1]
-    StockLt=models.MarketStocklists.objects.filter(ticker__icontains=ticker).filter(name__icontains=exchange).order_by(order).all()
-    pg=Paginator(StockLt,PGSZ)
-    StockLt=pg.page(st).object_list
-    tot_pgs=pg.num_pages
+    StockLt = models.Stocklists.objects.filter(sid__ticker__icontains=ticker, eid__name__icontains=exchange)
+    StockLt = StockLt.select_related('sid', 'eid').order_by(order).all()
+    pg = Paginator(StockLt, PGSZ)
+    StockLt = pg.page(st).object_list
+    tot_pgs = pg.num_pages
     if request.method == 'POST':
         form = allforms.SorterForm(request.POST)
-        # context = {'cur': 'Ticker', 'form': form, 'data': StockLt}
         if form.is_valid() and 'sfilt' in request.POST:
             sf = form.cleaned_data['sortfield']  #string of number
             tick = form.cleaned_data['ticker']
             exc = form.cleaned_data['exchange']
             data = StockLt
-            order='ticker'
-            # if len(tick) != 0:
-            #     data = [d for d in data if d['ticker'] == tick]
-            # if len(exc) != 0:
-            #     data = [d for d in data if d['name'] == exc]
+            order = 'ticker'
             if sf == 'Exchange':
-                # data = sorted(data, key=itemgetter('name'))
-                order='name'
+                order = 'eid__name'
             elif sf == 'Latest Price':
-                # data = sorted(data, key=itemgetter('latestprice'))
-                order='latestprice'
-            # context['data'] = data
-            if client==0:
-                return redirect('/market/stocklist/0/1/?exchange='+exc+'&ticker='+tick+'&order='+order)
-            else:
-                # return render(request, 'client/stocklist.html', context)
-                return redirect('/market/stocklist/1/1/?exchange='+exc+'&ticker='+tick+'&order='+order)
+                order = 'last_price'
+            return redirect(f'/market/stocklist/{client}/1/?exchange=' + exc + '&ticker=' + tick + '&order=' + order)
     else:
         form = allforms.SorterForm()
         data = StockLt
         context = {'cur': order, 'form': form, 'data': data}
-        paramstr="""?exchange="""+exchange+'&ticker='+ticker+'&order='+order
-        context['params']=paramstr
-        if st>1:
-            context['prev_exists']=True
-            context['prev']=st-1
-        if st<tot_pgs:
-            context['next_exists']=True
-            context['next']=st+1
-        if client==0:
+        paramstr = """?exchange=""" + exchange + '&ticker=' + ticker + '&order=' + order
+        context['params'] = paramstr
+        if st > 1:
+            context['prev_exists'] = True
+            context['prev'] = st - 1
+        if st < tot_pgs:
+            context['next_exists'] = True
+            context['next'] = st + 1
+        if client == 0:
             return render(request, 'broker/stocklist.html', context)
         else:
             return render(request, 'client/stocklist.html', context)
 
 
-
 def analysis_view(request, sid, eid):
+    style.use('ggplot')
     ph = custom_query("""
         SELECT price, creation_time FROM market_StockPricehistory as ph 
         WHERE ph.eid=%s and ph.sid=%s ORDER BY creation_time;""", [eid, sid])
-    
+    stock = models.Stock.objects.get(sid=sid)
+    exchange = models.Exchange.objects.get(eid=eid)
     price = [d['price'] for d in ph]
     tsz = [d['creation_time'] for d in ph]
     dates = matplotlib.dates.date2num(tsz)
-    plt.plot_date(dates, price)
-    fig = plt.gcf()
-    buf = BytesIO()
-    fig.savefig(buf, format='png')
+    fig = plt.figure(figsize=(16, 8))
+    plt.plot_date(dates, price, linestyle='solid', marker='None')
+    plt.title(f'{stock.ticker} Price at {exchange.name} Exchange')
+    plt.ylabel('Price')
+    plt.xlabel('Date')
+    buf = StringIO()
+    fig.savefig(buf, bbox_inches='tight', format='svg')
     buf.seek(0)
-
-    graphic = base64.b64encode(buf.read())
-    uri = 'data:image/png;base64,' + urllib.parse.quote(graphic)
-    return render(request, 'analysis.html', {'data': uri})
+    return render(request, 'analysis.html', {'data': buf.getvalue()})

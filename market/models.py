@@ -9,7 +9,6 @@ class Stock(models.Model):
     sid = models.AutoField(primary_key=True, db_column='sid')
     ticker = models.TextField(unique=True)
     total_stocks = models.BigIntegerField(blank=False, null=False)
-    last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
 
 class Exchange(models.Model):
@@ -23,8 +22,7 @@ class Indices(models.Model):
     index_name = models.TextField(unique=True, blank=False, null=False)
     ticker = models.TextField(unique=True, blank=False, null=False)
     last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-
-    # base_divisor = models.DecimalField(max_digits=15, decimal_places=4, default=100)
+    base_divisor = models.DecimalField(max_digits=15, decimal_places=4, default=100)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['eid', 'index_name'], name='unique_index_exchange')]
@@ -56,13 +54,13 @@ class Person(models.Model):
 class Client(models.Model):
     clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    email = models.TextField(unique=True, blank=False, null=False)
+    username = models.TextField(unique=True, blank=False, null=False)
 
 
 class Broker(models.Model):
     bid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='bid')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    email = models.TextField(unique=True, blank=False, null=False)
+    username = models.TextField(unique=True, blank=False, null=False)
     commission = models.DecimalField(max_digits=15, decimal_places=2)
 
 
@@ -169,7 +167,7 @@ class Holdings(models.Model):
     hold_id = models.AutoField(primary_key=True, db_column='hold_id')
     folio_id = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='folio_id')
     sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
-    quantity = models.IntegerField(blank=False, null=False)
+    quantity = models.BigIntegerField(blank=False, null=False, default=0)
     total_price = models.DecimalField(max_digits=15, decimal_places=2)
 
     class Meta:
@@ -208,29 +206,27 @@ class BuySellOrder(models.Model):
         constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buy_state_check')]
 
 
-class MarketStocklists(models.Model):
-    sid = models.IntegerField(blank=True, null=True)
-    ticker = models.TextField(blank=True, null=True)
-    name = models.TextField(blank=True, null=True)
-    eid = models.IntegerField(blank=True, null=True)
-    latestprice = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+class Stocklists(models.Model):
+    last_price_id = models.AutoField(primary_key=True, db_column='last_price_id')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+    last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
-        managed = False  # Created from a view. Don't remove.
-        db_table = 'market_stocklists'
+        constraints = [models.UniqueConstraint(fields=['sid', 'eid'], name='stock_exchange_price_pkey')]
 
 
 class LockedAtomicTransaction(Atomic):
     """
-	Does a atomic transaction, but also locks the entire table for any transactions, for the duration of this
-	transaction. Although this is the only way to avoid concurrency issues in certain situations, it should be used with
-	caution, since it has impacts on performance, for obvious reasons...
-	Usage:
-		# ModelsToLock = [ModelA, ModelB, ....]
-		with LockedAtomicTransaction(ModelsToLock):
-			# do whatever you want to do
-			ModelA.objects.create()
-	"""
+    Does a atomic transaction, but also locks the entire table for any transactions, for the duration of this
+    transaction. Although this is the only way to avoid concurrency issues in certain situations, it should be used with
+    caution, since it has impacts on performance, for obvious reasons...
+    Usage:
+        # ModelsToLock = [ModelA, ModelB, ....]
+        with LockedAtomicTransaction(ModelsToLock):
+            # do whatever you want to do
+            ModelA.objects.create()
+    """
     def __init__(self, models, using=None, savepoint=None):
         if using is None:
             using = DEFAULT_DB_ALIAS

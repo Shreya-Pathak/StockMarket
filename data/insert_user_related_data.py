@@ -12,15 +12,16 @@ from tqdm import tqdm
 import random
 from datetime import datetime
 from django.utils.timezone import make_aware
+from django.contrib.auth.hashers import make_password
 
 
 def insert_user_person_client_broker():
-    df = pd.read_csv('csv/persons.csv', sep=',', nrows=1000)
+    df = pd.read_csv('csv/persons.csv', sep=',', nrows=100)
     users, persons = [], []
-    for i, row in df.iterrows():
+    for i, row in tqdm(df.iterrows(), total=len(df.index)):
         email = row['EmailAddress']
         username = email.split('@')[0]
-        password = username
+        password = make_password(username)
         name = row['GivenName'] + ' ' + row['MiddleInitial'] + '. ' + row['Surname']
         address = row['StreetAddress'] + ', ' + row['City']
         telephone = row['TelephoneNumber'].replace('-', '')
@@ -35,14 +36,15 @@ def insert_user_person_client_broker():
     clients, brokers = [], []
     for user, person in zip(users, persons):
         # 20% of people are brokers
+        balance = random.randint(1e5, 2e5)
         if random.randint(0, 10) < 2:
             # is broker, add registeredat
             commission = random.randint(3, 15) + (random.randint(0, 100) / 100)
-            broker = models.Broker(bid=person, email=user.email, commission=commission)
+            broker = models.Broker(bid=person, username=user.username, balance=balance, commission=commission)
             brokers.append(broker)
         else:
             # is client, add portfolio, holdings
-            client = models.Client(clid=person, email=user.email)
+            client = models.Client(clid=person, username=user.username, balance=balance)
             clients.append(client)
 
     models.Client.objects.bulk_create(clients)
@@ -100,20 +102,20 @@ def insert_stockprice(batch_size=100000):
 
 
 def insert_last_prices():
-    exchanges = list(models.Exchange.objects.all())
-    stocks = list(models.Stock.objects.all())
-    for st in tqdm(stocks):
+    listedats = list(models.ListedAt.objects.select_related('sid', 'eid').all())
+    last_prices = []
+    for st_ex in tqdm(listedats):
         try:
-            price = models.StockPriceHistory.timescale.filter(sid=st.sid).latest().price
+            price = models.StockPriceHistory.timescale.filter(sid=st_ex.sid, eid=st_ex.eid).latest().price
         except Exception as e:
-            ex = random.choice(exchanges)
             stamp = make_aware(datetime.now())
             price = random.randint(30, 90) + (random.randint(0, 100) / 100)
-            cur = models.StockPriceHistory(sid=st, eid=ex, creation_time=stamp, price=price)
+            cur = models.StockPriceHistory(sid=st_ex.sid, eid=st_ex.eid, creation_time=stamp, price=price)
             cur.save()
         finally:
-            st.last_price = price
-            st.save(update_fields=['last_price'])
+            last_price = models.Stocklists(sid=st_ex.sid, eid=st_ex.eid, last_price=price)
+            last_prices.append(last_price)
+    models.Stocklists.objects.bulk_create(last_prices)
 
     indices = list(models.Indices.objects.all())
     for idx in tqdm(indices):
@@ -165,7 +167,7 @@ def insert_portfolio_holdings():
     stocks = list(models.Stock.objects.all())
     last_price, sector = {}, {}
     for stock in tqdm(stocks):
-        last_price[stock.sid] = models.StockPriceHistory.timescale.filter(sid=stock.sid).latest().price
+        last_price[stock.sid] = models.Stocklists.objects.filter(sid=stock.sid).first().last_price
         sector[stock.sid] = models.Company.objects.get(cid=stock.sid).sector
 
     for client in models.Client.objects.all():

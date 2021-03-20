@@ -63,17 +63,17 @@
             {% for r in data %}
             <tr>
                 <td>
-                    {{r.ticker}}
+                    {{r.sid.ticker}}
                 </td>
                 <td>
-                    {{r.name}}
+                    {{r.eid.name}}
                 </td>
                 <td>
-                    {{r.latestprice}}
+                    {{r.last_price}}
                 </td>
                 <td>
                     <button class="btn btn-default" type="button">
-                        <a href="{% url 'analysis' r.sid r.id %}">
+                        <a href="{% url 'analysis' r.sid.sid r.eid.eid %}">
                             Price History
                         </a>
                     </button>
