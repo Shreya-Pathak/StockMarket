@@ -31,6 +31,7 @@ def get_index_data():
 
     for index in indices:
         cur = list(stock_data.get_stocks_by_index(index))
+        is_first = True
         current_exchanges = set()
         for stock in cur:
             ex_variations = [(s['yahoo'], s['google'].split(':')[0]) for s in stock['symbols'] if s['google'].split(':')[0] != bad]
@@ -58,8 +59,9 @@ def get_index_data():
                 companies[sym]['yahoo,exchange'].add(e)
                 stock_listed_at[sym].add(e[1])
 
-            if len(current_exchanges) == 0:
+            if is_first:
                 [current_exchanges.add(t[1]) for t in ex_variations]
+                is_first = False
             else:
                 good = set()
                 for ex in ex_variations:

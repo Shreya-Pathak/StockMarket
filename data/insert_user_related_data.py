@@ -16,6 +16,7 @@ from django.contrib.auth.hashers import make_password
 
 random.seed(69)
 
+
 def insert_user_person_client_broker():
     df = pd.read_csv('csv/persons.csv', sep=',', nrows=100)
     users, persons = [], []
@@ -204,17 +205,19 @@ def insert_portfolio_holdings():
                 holds.append(hold)
         models.Holdings.objects.bulk_create(holds)
 
+
 def generate_bases():
     indices = list(models.Indices.objects.all())
     print("Inserting Bases")
     for index in indices:
         last_value = index.last_price
         market_cap = 0
-        for stidx in models.PartOfIndex.objects.filter(iid = index):
-                last_price_stock = models.Stocklists.objects.filter(sid = stidx.sid, eid = index.eid).first()
-                market_cap += last_price_stock.last_price * stidx.sid.total_stocks
+        for stidx in models.PartOfIndex.objects.filter(iid=index):
+            last_price_stock = models.Stocklists.objects.filter(sid=stidx.sid, eid=index.eid).first()
+            market_cap += last_price_stock.last_price * stidx.sid.total_stocks
         index.base_divisor = market_cap / last_value
         index.save(update_fields=['base_divisor'])
+
 
 insert_user_person_client_broker()
 insert_reg_at()
