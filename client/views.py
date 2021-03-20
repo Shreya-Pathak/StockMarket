@@ -155,16 +155,22 @@ def order_view(request):
         form = forms.OrderForm(request.POST)
         print(form.is_valid())
         if form.is_valid():
-            folio_id = form.cleaned_data['folio_id']
-            bid = form.cleaned_data['bid']
-            eid = form.cleaned_data['eid']
-            order_type = form.cleaned_data['type']
-            sid = form.cleaned_data['sid']
-            price = form.cleaned_data['price']
-            quantity = form.cleaned_data['quantity']
-            print(folio_id, bid, eid, order_type, sid, price, quantity)
-            print(order_type)
-            neworder = models.BuySellOrder(folio_id=models.Portfolio.objects.get(folio_id=folio_id), bid=models.Broker.objects.get(bid=bid), eid=models.Exchange.objects.get(eid=eid), sid=models.Stock.objects.get(sid=sid), quantity=quantity, completed_quantity=0, price=price, creation_time=timezone.now(), order_type=order_type)
+            Portfolio = form.cleaned_data['Portfolio']
+            Broker = form.cleaned_data['Broker']
+            Exchange = form.cleaned_data['Exchange']
+            Order_Type = form.cleaned_data['Order_Type']
+            Stock = form.cleaned_data['Stock']
+            Price = form.cleaned_data['Price']
+            Quantity = form.cleaned_data['Quantity']
+            print(Portfolio, Broker, Exchange, Order_Type, Stock, Price, Quantity)
+
+            user = models.Client.objects.filter(username=request.user.username).first()
+            folio_id = models.Portfolio.objects.filter(pname=Portfolio, clid=user).first()
+            sid = models.Stock.objects.filter(ticker=Stock).first()
+            bid = models.Broker.objects.filter(username=Broker).first()
+            eid = models.Exchange.objects.filter(name=Exchange).first()
+            print(folio_id, bid, eid, sid, Order_Type, Price, Quantity)
+            neworder = models.BuySellOrder(folio_id=folio_id, bid=bid, eid=eid, sid=sid, quantity=Quantity, completed_quantity=0, price=Price, creation_time=timezone.now(), order_type=Order_Type)
             neworder.save()
             return HttpResponseRedirect('portfolio')
     else:
