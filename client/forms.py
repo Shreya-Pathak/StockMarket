@@ -64,5 +64,11 @@ class OrderForm(forms.Form):
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-lg-4'
         self.helper.field_class = 'col-lg-6'
-        self.helper.layout = Layout('folio_id', 'bid','eid','type', 'sid','price', 'quantity', Submit('submit', 'PlaceOrder', css_class='btn btn-primary'))
+        self.helper.layout = Layout(Div('folio_id',css_class='with-margin'), 
+                                    Div('bid',css_class='with-margin'),
+                                    Div('eid',css_class='with-margin'),
+                                    Div('type',css_class='with-margin'),
+                                    Div('sid',css_class='with-margin'),
+                                    Div('price',css_class='with-margin'), 
+                                    Div('quantity',css_class='with-margin'), Submit('submit', 'PlaceOrder', css_class='btn btn-primary'))
     
