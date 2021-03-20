@@ -78,14 +78,14 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.info(request, 'Successfully logged in.')
-                return HttpResponseRedirect('home')
             if get_client(username) is None:
                 messages.warning(request, 'You can\'t login as a client.')
             else:
+                user = authenticate(request, username=username, password=password)
+                if user is not None:
+                    login(request, user)
+                    messages.info(request, 'Successfully logged in.')
+                    return HttpResponseRedirect('home')
                 messages.error(request, 'Wrong username/password.')
     else:
         form = forms.LoginForm()
