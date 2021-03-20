@@ -8,11 +8,14 @@ from operator import itemgetter
 import market.forms as allforms
 from io import BytesIO, StringIO
 import base64, urllib
-import matplotlib
-from matplotlib import style
-import matplotlib.pyplot as plt
 import numpy as np
 from . import models
+
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import style
+style.use('ggplot')
+import matplotlib.pyplot as plt
 
 
 # Create your views here.
@@ -96,7 +99,6 @@ def stocklist_view(request, client=0, st=0):
 
 
 def analysis_view(request, sid, eid):
-    style.use('ggplot')
     ph = custom_query("""
         SELECT price, creation_time FROM market_StockPricehistory as ph 
         WHERE ph.eid=%s and ph.sid=%s ORDER BY creation_time;""", [eid, sid])
@@ -113,4 +115,5 @@ def analysis_view(request, sid, eid):
     buf = StringIO()
     fig.savefig(buf, bbox_inches='tight', format='svg')
     buf.seek(0)
+    plt.close()
     return render(request, 'analysis.html', {'data': buf.getvalue()})
