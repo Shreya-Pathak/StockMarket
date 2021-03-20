@@ -13,6 +13,7 @@ import yfinance as yf
 import pandas as pd
 from pytickersymbols import PyTickerSymbols
 
+random.seed(69)
 
 def get_index_data():
     stock_data = PyTickerSymbols()
@@ -100,8 +101,10 @@ def insert_stocks_companies():
     for i, row in df.iterrows():
         if row['ticker'] in already:
             continue
-        if not row['logo']:
+        if not row['logo'].strip():
             row['logo'] = 'https://logo.clearbit.com/clearbit.com'
+        if not row['sector'].strip():
+            row['sector'] = 'Miscellaneous'
         comp = models.Company(cid=stocks[i], name=row['name'], address=row['address'], country=row['country'], logo=row['logo'], zipcode=row['zipcode'], sector=row['sector'], summary=row['summary'], city=row['city'], phone=str(row['phone']), website=row['website'], employees=row['employees'], industry=row['industry'])
         companies.append(comp)
     if len(companies) > 0:

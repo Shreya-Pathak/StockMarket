@@ -14,6 +14,7 @@ from datetime import datetime
 from django.utils.timezone import make_aware
 from django.contrib.auth.hashers import make_password
 
+random.seed(69)
 
 def insert_user_person_client_broker():
     df = pd.read_csv('csv/persons.csv', sep=',', nrows=100)
@@ -84,6 +85,8 @@ def insert_stockprice(batch_size=100000):
                 exchange = row[header['exchange']]
                 stamp = row[header['creation_time']]
                 price = float(row[header['price']])
+                if price == float('nan'):
+                    continue
                 if stock not in ticker_obj.keys():
                     continue
                 if exchange not in exchange_obj.keys():
@@ -149,6 +152,8 @@ def insert_indexprice(batch_size=100000):
                 index = row[header['ticker']]
                 stamp = row[header['creation_time']]
                 price = float(row[header['price']])
+                if price == float('nan'):
+                    continue
                 if index not in index_obj.keys():
                     continue
                 index = index_obj[index]

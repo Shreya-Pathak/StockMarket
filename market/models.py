@@ -35,7 +35,7 @@ class Company(models.Model):
     country = models.TextField(blank=True, null=True)
     logo = models.TextField(blank=False, null=False, default='https://logo.clearbit.com/clearbit.com')
     zipcode = models.TextField(blank=True, null=True)
-    sector = models.TextField(blank=True, null=True)
+    sector = models.TextField(blank=True, null=True, default='Miscellaneous')
     summary = models.TextField(blank=True, null=True)
     city = models.TextField(blank=True, null=True)
     phone = models.TextField(blank=True, null=True)
