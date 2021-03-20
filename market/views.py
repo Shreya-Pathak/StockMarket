@@ -35,7 +35,7 @@ def custom_query(query, format_vars=None):
 
 
 def stocklist_view(request, client=0, st=0):
-    PGSZ = 2
+    PGSZ = 8
     exchange = request.GET.get('exchange', '')
     ticker = request.GET.get('ticker', '')
     order = request.GET.get('order', 'sid__ticker')
