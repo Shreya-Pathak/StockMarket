@@ -86,7 +86,7 @@ def insert_stockprice(batch_size=100000):
                 exchange = row[header['exchange']]
                 stamp = row[header['creation_time']]
                 price = float(row[header['price']])
-                if price == float('nan'):
+                if price != price:
                     continue
                 if stock not in ticker_obj.keys():
                     continue
@@ -154,7 +154,7 @@ def insert_indexprice(batch_size=100000):
                 index = row[header['ticker']]
                 stamp = row[header['creation_time']]
                 price = float(row[header['price']])
-                if price == float('nan'):
+                if price != price:
                     continue
                 if index not in index_obj.keys():
                     continue
