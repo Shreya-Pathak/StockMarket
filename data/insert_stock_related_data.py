@@ -15,6 +15,7 @@ from pytickersymbols import PyTickerSymbols
 
 random.seed(69)
 
+
 def get_index_data():
     stock_data = PyTickerSymbols()
     indices = stock_data.get_all_indices()
@@ -84,6 +85,7 @@ def get_index_data():
 
 def insert_stocks_companies():
     df = pd.read_csv('csv/companies.csv', sep=',')
+    df.fillna('', inplace=True)
     stocks, companies = [], []
 
     already = set()
