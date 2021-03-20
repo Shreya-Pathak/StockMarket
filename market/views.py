@@ -74,7 +74,7 @@ def stocklist_view(request, client=0, st=0):
             tick = form.cleaned_data['ticker']
             exc = form.cleaned_data['exchange']
             data = StockLt
-            order = 'ticker'
+            order = 'sid__ticker'
             if sf == 'Exchange':
                 order = 'eid__name'
             elif sf == 'Latest Price':
