@@ -22,7 +22,7 @@ class Indices(models.Model):
     index_name = models.TextField(unique=True, blank=False, null=False)
     ticker = models.TextField(unique=True, blank=False, null=False)
     last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    base_divisor = models.DecimalField(max_digits=15, decimal_places=4, default=100)
+    base_divisor = models.DecimalField(max_digits=30, decimal_places=4, default=100)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['eid', 'index_name'], name='unique_index_exchange')]

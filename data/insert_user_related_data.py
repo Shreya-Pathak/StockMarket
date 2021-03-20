@@ -107,6 +107,7 @@ def insert_stockprice(batch_size=100000):
 def insert_last_prices():
     listedats = list(models.ListedAt.objects.select_related('sid', 'eid').all())
     last_prices = []
+    print("Updating Latest Prices")
     for st_ex in tqdm(listedats):
         try:
             price = models.StockPriceHistory.timescale.filter(sid=st_ex.sid, eid=st_ex.eid).latest().price
@@ -170,6 +171,7 @@ def insert_indexprice(batch_size=100000):
 
 def insert_portfolio_holdings():
     stocks = list(models.Stock.objects.all())
+    print("Inserting Portfolio Holdings")
     last_price, sector = {}, {}
     for stock in tqdm(stocks):
         last_price[stock.sid] = models.Stocklists.objects.filter(sid=stock.sid).first().last_price
@@ -202,6 +204,17 @@ def insert_portfolio_holdings():
                 holds.append(hold)
         models.Holdings.objects.bulk_create(holds)
 
+def generate_bases():
+    indices = list(models.Indices.objects.all())
+    print("Inserting Bases")
+    for index in indices:
+        last_value = index.last_price
+        market_cap = 0
+        for stidx in models.PartOfIndex.objects.filter(iid = index):
+                last_price_stock = models.Stocklists.objects.filter(sid = stidx.sid, eid = index.eid).first()
+                market_cap += last_price_stock.last_price * stidx.sid.total_stocks
+        index.base_divisor = market_cap / last_value
+        index.save(update_fields=['base_divisor'])
 
 insert_user_person_client_broker()
 insert_reg_at()
@@ -209,3 +222,4 @@ insert_stockprice()
 insert_indexprice()
 insert_last_prices()
 insert_portfolio_holdings()
+generate_bases()
