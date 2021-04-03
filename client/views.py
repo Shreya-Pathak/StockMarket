@@ -6,6 +6,7 @@ import client.forms as forms
 import market.models as models
 from django.contrib import messages
 from django.utils import timezone
+from decimal import Decimal
 
 # Create your views here.
 
@@ -148,31 +149,69 @@ def order_view(request):
         messages.error(request, 'Please login first.')
         return HttpResponseRedirect('login')
 
-    print(request.method)
-
     if request.method == 'POST':
-        print('Placing Order')
-        form = forms.OrderForm(request.POST)
-        print(form.is_valid())
+        form = forms.OrderForm(data=request.POST)
         if form.is_valid():
-            Portfolio = form.cleaned_data['Portfolio']
-            Broker = form.cleaned_data['Broker']
-            Exchange = form.cleaned_data['Exchange']
-            Order_Type = form.cleaned_data['Order_Type']
-            Stock = form.cleaned_data['Stock']
-            Price = form.cleaned_data['Price']
-            Quantity = form.cleaned_data['Quantity']
-            print(Portfolio, Broker, Exchange, Order_Type, Stock, Price, Quantity)
+            print(form.cleaned_data)
+            portfolio = form.cleaned_data['portfolio']
+            broker = form.cleaned_data['broker']
+            exchange = form.cleaned_data['exchange']
+            order_type = form.cleaned_data['order_type']
+            stock = form.cleaned_data['stock']
+            price = form.cleaned_data['price']
+            quantity = form.cleaned_data['quantity']
+            client = models.Client.objects.filter(username=request.user.username).first()
+            holding = models.Holdings.objects.filter(folio_id=portfolio, sid=stock).first()
 
-            user = models.Client.objects.filter(username=request.user.username).first()
-            folio_id = models.Portfolio.objects.filter(pname=Portfolio, clid=user).first()
-            sid = models.Stock.objects.filter(ticker=Stock).first()
-            bid = models.Broker.objects.filter(username=Broker).first()
-            eid = models.Exchange.objects.filter(name=Exchange).first()
-            print(folio_id, bid, eid, sid, Order_Type, Price, Quantity)
-            neworder = models.BuySellOrder(folio_id=folio_id, bid=bid, eid=eid, sid=sid, quantity=Quantity, completed_quantity=0, price=Price, creation_time=timezone.now(), order_type=Order_Type)
-            neworder.save()
-            return HttpResponseRedirect('portfolio')
+            # check all objects are ok
+            if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell'):
+                messages.error(request, 'Invalid order.')
+
+            cost = Decimal(quantity * price)
+            commission = (broker.commission * cost) / 100
+
+            # check if stock is listed at the exchange
+            if not models.ListedAt.objects.filter(sid=stock, eid=exchange).exists():
+                messages.error(request, 'Stock is not listed at this exchange.')
+            # check if broker is registered at the exchange
+            elif not models.RegisteredAt.objects.filter(bid=broker, eid=exchange).exists():
+                messages.error(request, 'Broker is not registered at this exchange.')
+            # in any order_type, check if commission balance is present
+            # if order_type is buy, check if balance is enough
+            elif order_type == 'Buy' and client.balance < commission + cost:
+                messages.error(request, 'Insufficient balance.')
+            # if order_type is sell, check if stock quantity in holdings >= specified holdings
+            elif order_type == 'Sell' and (client.balance < commission or holding.quantity < quantity):
+                if client.balance < commission:
+                    messages.error(request, 'Insufficient balance.')
+                if holding.quantity < quantity:
+                    messages.error(request, 'Insufficient stocks.')
+            else:
+                # create the order
+                neworder = models.BuySellOrder(folio_id=portfolio, bid=broker, eid=exchange, sid=stock, quantity=quantity, completed_quantity=0, price=price, creation_time=timezone.now(), order_type=order_type)
+                # neworder = models.PendingOrder(folio_id=portfolio, bid=broker, eid=exchange, sid=stock, quantity=quantity, price=price, creation_time=timezone.now(), order_type=order_type)
+                
+                # give commission to broker
+                broker.balance += commission
+                # update the holdings and holding balance of client
+                if order_type == 'Buy':
+                    holding.quantity += quantity
+                    holding.total_price += cost
+                    client.balance -= commission + cost
+                    client.holding_balance += cost
+                # total_price in holdings can be negative ideally
+                else:
+                    holding.quantity -= quantity
+                    holding.total_price -= cost
+                    client.balance -= commission
+
+                neworder.save()
+                client.save()
+                broker.save()
+                holding.save()
+
+                messages.success(request, 'Your order has been placed.')
+                form = forms.OrderForm()
     else:
         form = forms.OrderForm()
     return render(request, 'client/placeorder.html', {'form': form})

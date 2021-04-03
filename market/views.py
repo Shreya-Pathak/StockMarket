@@ -24,7 +24,7 @@ def index_view(request):
 
 
 def custom_query(query, format_vars=None):
-    "executes ssql query and returns each row as a dict"
+    "executes sql query and returns each row as a dict"
     if not query.endswith(';'):
         query += ';'
     with connection.cursor() as cursor:
@@ -40,7 +40,7 @@ def stocklist_view(request, client=0, st=0):
     ticker = request.GET.get('ticker', '')
     order = request.GET.get('order', 'sid__ticker')
     if st == 0:
-        st += 1
+        st = 1
     # StockLt = custom_query("""
     # SELECT sid,ticker, name, J1.eid AS id,
     # (SELECT price FROM market_StockPriceHistory AS ph
@@ -82,7 +82,7 @@ def stocklist_view(request, client=0, st=0):
             return redirect(f'/market/stocklist/{client}/1/?exchange=' + exc + '&ticker=' + tick + '&order=' + order)
     else:
         form = allforms.SorterForm()
-        form['sortfield'].initial=order if order!='sid__ticker' else 'Ticker'
+        form['sortfield'].initial = order if order != 'sid__ticker' else 'Ticker'
         data = StockLt
         context = {'cur': order, 'form': form, 'data': data}
         paramstr = """?exchange=""" + exchange + '&ticker=' + ticker + '&order=' + order

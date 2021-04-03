@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from django.utils import timezone
 
-#### Need to check if both orders from same folio, stock, price get cancelled
+# Need to check if both orders from same folio, stock, price get cancelled
 def trigger():
     print('Order Matching')
     stockpricehistory_list = []
@@ -13,11 +13,12 @@ def trigger():
 
     with models.LockedAtomicTransaction([models.BuySellOrder]):
 
-        ###Iterate over all buy orders
-        for order in models.BuySellOrder.objects.select_related('sid').filter(order_type='Buy'):
-            print('Current Order :', order.order_id, '| type =', order.order_type)
+        # Iterate over all buy orders
+        for order in models.BuySellOrder.objects.select_related('sid', 'folio_id__clid').filter(order_type='Buy'):
+            buyer = order.folio_id.clid
+            print('Current Order =', order.__dict__)
 
-            order_match_set = models.BuySellOrder.objects.filter(
+            order_match_set = models.BuySellOrder.objects.select_related('folio_id__clid').filter(
                 sid=order.sid,
                 eid=order.eid,
                 order_type='Sell',
@@ -25,11 +26,7 @@ def trigger():
                 quantity__gt=F('completed_quantity')
             )
 
-            try:
-                Stocklists_entry = models.Stocklists.objects.get(sid=order.sid, eid=order.eid)
-            except Exception as e:
-                print(order.sid.ticker)
-                print(order.eid.name)
+            Stocklists_entry = models.Stocklists.objects.get(sid=order.sid, eid=order.eid)
             previous_price = Stocklists_entry.last_price
             total_stocks = order.sid.total_stocks
             print('Stock =', order.sid.ticker, '| Previous price =', previous_price, '| Total Stocks =', total_stocks)
@@ -49,7 +46,6 @@ def trigger():
                 
                 # Index weightage: Presently One-to-One Market-Cap
                 for index_id in index_match:
-
                     index_object = index_id.iid
                     index_object.last_price += (order.price - previous_price) * total_stocks / index_object.base_divisor
                     new_index_entry = models.IndexPriceHistory(
@@ -70,36 +66,28 @@ def trigger():
 
             rem_quantity = order.quantity - order.completed_quantity
             assert rem_quantity != 0
-            ###Match Orders
+
+            # Match Orders
             for order_match in order_match_set:
                 if rem_quantity == 0: break
-                print(f'Matching:{order_match.order_id}')
+                seller = order_match.folio_id.clid
+                print('Match Order =', order_match.__dict__)
 
-                sell_stock_holding = models.Holdings.objects.filter(folio_id=order_match.folio_id, sid=order_match.sid).first()
-                if sell_stock_holding is None:
-                    ###Error report
-                    # print("fault")
-                    continue
-                    sell_stock_holding = models.Holdings(folio_id=order_match.folio_id, sid=order_match.sid, quantity=0, total_price=0)
-
-                
                 quantity_match = min(rem_quantity, order_match.quantity - order_match.completed_quantity)
                 rem_quantity -= quantity_match
                 order_match.completed_quantity += quantity_match
+
+                buyer.holding_balance -= quantity_match * order.price
+                seller.holding_balance += quantity_match * order.price
+
+                if order_match.completed_quantity == order_match.quantity:
+                    seller.balance += order.price * order_match.quantity
+                    seller.holding_balance -= order.price * order_match.quantity
+
+                seller.save()
                 order_match.save(update_fields=['completed_quantity'])
 
-
-                sell_stock_holding.quantity -= quantity_match
-                sell_stock_holding.total_price -= quantity_match * order.price
-                buy_stock_holding.quantity += quantity_match
-                buy_stock_holding.total_price += quantity_match * order.price
-
-                if sell_stock_holding.quantity == 0:
-                    sell_stock_holding.delete()
-                else:
-                    sell_stock_holding.save(update_fields=['quantity', 'total_price'])
-
-            buy_stock_holding.save(update_fields=['quantity', 'total_price'])
+            buyer.save()
             order.completed_quantity = order.quantity - rem_quantity
             order.save(update_fields=['completed_quantity'])
 

@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'client',
     'broker',
     'market.apps.MarketConfig',
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

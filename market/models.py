@@ -10,10 +10,16 @@ class Stock(models.Model):
     ticker = models.TextField(unique=True)
     total_stocks = models.BigIntegerField(blank=False, null=False)
 
+    def __str__(self):
+        return self.ticker
+
 
 class Exchange(models.Model):
     eid = models.AutoField(primary_key=True, db_column='eid')
     name = models.TextField(unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Indices(models.Model):
@@ -54,6 +60,7 @@ class Person(models.Model):
 class Client(models.Model):
     clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    holding_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     username = models.TextField(unique=True, blank=False, null=False)
 
 
@@ -62,6 +69,10 @@ class Broker(models.Model):
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     username = models.TextField(unique=True, blank=False, null=False)
     commission = models.DecimalField(max_digits=15, decimal_places=2)
+    latency = models.IntegerField(blank=False, null=False, default=0)
+
+    def __str__(self):
+        return f'{self.bid.name} - {self.commission}%'
 
 
 class Portfolio(models.Model):
@@ -71,6 +82,9 @@ class Portfolio(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['clid', 'pname'], name='client_portfolio_pkey')]
+
+    def __str__(self):
+        return self.pname
 
 
 class Wishlist(models.Model):
@@ -188,6 +202,20 @@ class OldOrder(models.Model):
     timescale = TimescaleManager()
 
 
+class PendingOrder(models.Model):
+    order_id = models.AutoField(primary_key=True, db_column='order_id')
+    folio_id = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='folio_id')
+    bid = models.ForeignKey(Broker, models.DO_NOTHING, db_column='bid')
+    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
+    quantity = models.IntegerField(blank=False, null=False)
+    price = models.DecimalField(max_digits=15, decimal_places=2)
+    creation_time = TimescaleDateTimeField(interval="1 day")
+    order_type = models.TextField(blank=False, choices=[('Buy', 'Buy'), ('Sell', 'Sell')])
+    objects = models.Manager()
+    timescale = TimescaleManager()
+
+
 class BuySellOrder(models.Model):
     order_id = models.AutoField(primary_key=True, db_column='order_id')
     folio_id = models.ForeignKey(Portfolio, models.DO_NOTHING, db_column='folio_id')
@@ -203,7 +231,7 @@ class BuySellOrder(models.Model):
     timescale = TimescaleManager()
 
     class Meta:
-        constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buy_state_check')]
+        constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buysell_state_check')]
 
 
 class Stocklists(models.Model):
