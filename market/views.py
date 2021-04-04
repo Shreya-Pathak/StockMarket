@@ -39,29 +39,7 @@ def stocklist_view(request, client=0, st=0):
     exchange = request.GET.get('exchange', '')
     ticker = request.GET.get('ticker', '')
     order = request.GET.get('order', 'sid__ticker')
-    if st == 0:
-        st = 1
-    # StockLt = custom_query("""
-    # SELECT sid,ticker, name, J1.eid AS id,
-    # (SELECT price FROM market_StockPriceHistory AS ph
-    # WHERE ph.eid = J1.eid AND ph.sid = sid"""+
-    # """ ORDER BY creation_time DESC LIMIT 1) AS latestprice
-    # FROM (market_ListedAt JOIN market_Stock USING (sid)) AS J1
-    # JOIN market_Exchange ON (J1.eid = market_exchange.eid) WHERE """+ """name ilike '%"""+exchange+"""%' AND ticker ilike  '%"""+ticker
-    # +"""%' ORDER BY """+
-    #  order + """ OFFSET """+str(st*PGSZ)+""" LIMIT """+str(PGSZ+1)+""" ;""")
-    # StockLt = custom_query("""
-    # CREATE VIEW if not exists stocklists SELECT sid,ticker, name, J1.eid AS id,
-    # (SELECT price FROM market_StockPriceHistory AS ph
-    # WHERE ph.eid = J1.eid AND ph.sid = sid"""+
-    # """ ORDER BY creation_time DESC LIMIT 1) AS latestprice
-    # FROM (market_ListedAt JOIN market_Stock USING (sid)) AS J1
-    # JOIN market_Exchange ON (J1.eid = market_exchange.eid); """)
-    # if len(StockLt)!=PGSZ+1:
-    #     last=True
-    # else:
-    #     last=False
-    #     StockLt=StockLt[:-1]
+    if st == 0: st = 1
     StockLt = models.Stocklists.objects.filter(sid__ticker__icontains=ticker, eid__name__icontains=exchange)
     StockLt = StockLt.select_related('sid', 'eid').order_by(order).all()
     pg = Paginator(StockLt, PGSZ)

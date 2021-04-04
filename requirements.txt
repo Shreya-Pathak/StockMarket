@@ -16,3 +16,4 @@ schedule>=1.0.0
 tzlocal>=2.1
 APScheduler>=3.7.0
 django-autocomplete-light>=3.8.2
+django-bulk-update>=2.2.0

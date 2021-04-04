@@ -162,6 +162,9 @@ def order_view(request):
             quantity = form.cleaned_data['quantity']
             client = models.Client.objects.filter(username=request.user.username).first()
             holding = models.Holdings.objects.filter(folio_id=portfolio, sid=stock).first()
+            # add stock to portfolio if doesnt exist
+            if holding is None:
+                holding = models.Holdings(folio_id=portfolio, sid=stock, quantity=0, total_price=0)
 
             # check all objects are ok
             if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell'):
@@ -195,10 +198,7 @@ def order_view(request):
                 broker.balance += commission
                 # update the holdings and holding balance of client
                 if order_type == 'Buy':
-                    holding.quantity += quantity
-                    holding.total_price += cost
                     client.balance -= commission + cost
-                    client.holding_balance += cost
                 # total_price in holdings can be negative ideally
                 else:
                     holding.quantity -= quantity
@@ -215,3 +215,35 @@ def order_view(request):
     else:
         form = forms.OrderForm()
     return render(request, 'client/placeorder.html', {'form': form})
+
+
+def cancel_order_view(request):
+    if check_user(request):
+        return HttpResponseRedirect('/')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please login first.')
+        return HttpResponseRedirect('login')
+    if request.method == 'POST':
+        order_id = get_from_request(request.POST)
+        for model in [models.BuySellOrder, models.PendingOrder]:
+            client = models.Client.objects.filter(username=request.user.username).first()
+            order = model.objects.select_related('folio_id__clid').filter(pk=order_id).first()
+            if order is None: continue
+            rem_quantity = order.quantity - order.completed_quantity
+            if order.folio_id.clid.clid != client.clid:
+                messages.error(request, '')
+                return HttpResponseRedirect('cancel_order')
+            if order.order_type == 'Buy':
+                client.balance += order.price * rem_quantity
+                client.save()
+            else:
+                holding = models.Holdings.objects.filter(folio_id=order.folio_id, sid=order.sid).first()
+                if holding is None:
+                    messages.error(request, '')
+                    return HttpResponseRedirect('cancel_order')
+                holding.quantity += rem_quantity
+                holding.total_price += rem_quantity * order.price
+                holding.save()
+            order.delete()
+    # display pending orders
+    pass

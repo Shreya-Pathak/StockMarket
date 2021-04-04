@@ -119,8 +119,8 @@ def order_view(request):
         return HttpResponseRedirect('login')
     brid = get_broker(request.user.username)
     assert brid is not None
-    oldorder = models.OldOrder.objects.filter(bid=brid)
-    currorder = models.BuySellOrder.objects.filter(bid=brid)
+    oldorder = models.OldOrder.objects.select_related('sid', 'eid', 'folio_id__clid__clid').filter(bid=brid)
+    currorder = models.BuySellOrder.objects.select_related('sid', 'eid', 'folio_id__clid__clid').filter(bid=brid)
     formog = forms.SorterForm()
 
     if request.method == 'POST':
@@ -156,3 +156,24 @@ def order_view(request):
 
     context = {'oldorders': oldorder, 'currorder': currorder, 'form': formog}
     return render(request, 'broker/myorders.html', context)
+
+
+def approve_order_view(request):
+    if request.method == 'POST':
+        order_id = get_from_request(request.POST)
+        broker = models.Broker.objects.filter(username=request.user.username).first()
+        order = models.PendingOrder.objects.select_related('bid').filter(pk=order_id).first()
+        if order.bid.bid != broker.bid:
+            messages.error(request, '')
+            return HttpResponseRedirect('approve_order')
+        neworder = models.BuySellOrder(folio_id=order.folio_id, bid=order.bid, eid=order.eid, sid=order.sid, quantity=order.quantity, completed_quantity=0, price=order.price, creation_time=order.creation_time, order_type=order.order_type)
+        delay = (timezone.now() - order.creation_time).total_seconds()
+        n = broker.orders_approved
+        broker.latency += (delay - broker.latency) // (n + 1)
+        broker.orders_approved += 1
+        order.delete()
+        neworder.save()
+        broker.save()
+        
+    # display orders from pending orders table
+    pass

@@ -2,6 +2,13 @@ from dal import autocomplete
 import market.models as models
 
 
+def is_int(v):
+    try:
+        return int(v)
+    except:
+        return 0
+
+
 class PortfolioAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -18,14 +25,16 @@ class StockAutocomplete(autocomplete.Select2QuerySetView):
         if not self.request.user.is_authenticated:
             return models.Stock.objects.none()
         order_type = self.forwarded.get('order_type', False)
-        quantity = int(self.forwarded.get('quantity', 0))
-        folio_id = int(self.forwarded.get('portfolio', 0))
+        quantity = is_int(self.forwarded.get('quantity', 0))
+        folio_id = is_int(self.forwarded.get('portfolio', 0))
         if not order_type or not folio_id or quantity <= 0:
             return models.Stock.objects.none()
-        qs = models.Holdings.objects.filter(folio_id=folio_id)
-        if order_type == 'Sell':
+        if order_type == 'Buy':
+            qs = models.Stock.objects.all()
+        else:
+            qs = models.Holdings.objects.filter(folio_id=folio_id)
             qs = qs.filter(quantity__gte=quantity)
-        qs = models.Stock.objects.filter(sid__in=qs.values('sid'))
+            qs = models.Stock.objects.filter(sid__in=qs.values('sid'))
         qs = qs.filter(ticker__icontains=self.q).order_by('ticker')
         return qs
 
@@ -35,7 +44,7 @@ class ExchangeAutocomplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated:
             return models.Exchange.objects.none()
-        sid = int(self.forwarded.get('stock', 0))
+        sid = is_int(self.forwarded.get('stock', 0))
         if not sid:
             return models.Exchange.objects.none()
         qs = models.Exchange.objects.filter(eid__in=models.ListedAt.objects.filter(sid=sid).values('eid'))
@@ -48,7 +57,7 @@ class BrokerAutocomplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated:
             return models.Broker.objects.none()
-        eid = int(self.forwarded.get('exchange', 0))
+        eid = is_int(self.forwarded.get('exchange', 0))
         if not eid:
             return models.Broker.objects.none()
         qs = models.Broker.objects.filter(bid__in=models.RegisteredAt.objects.filter(eid=eid).values('bid'))

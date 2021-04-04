@@ -60,7 +60,6 @@ class Person(models.Model):
 class Client(models.Model):
     clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    holding_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     username = models.TextField(unique=True, blank=False, null=False)
 
 
@@ -70,6 +69,7 @@ class Broker(models.Model):
     username = models.TextField(unique=True, blank=False, null=False)
     commission = models.DecimalField(max_digits=15, decimal_places=2)
     latency = models.IntegerField(blank=False, null=False, default=0)
+    orders_approved = models.IntegerField(blank=False, null=False, default=0)
 
     def __str__(self):
         return f'{self.bid.name} - {self.commission}%'
