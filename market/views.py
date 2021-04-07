@@ -39,12 +39,12 @@ def stocklist_view(request, client=0, st=0):
     exchange = request.GET.get('exchange', '')
     ticker = request.GET.get('ticker', '')
     order = request.GET.get('order', 'sid__ticker')
-    if st == 0: st = 1
     StockLt = models.Stocklists.objects.filter(sid__ticker__icontains=ticker, eid__name__icontains=exchange)
     StockLt = StockLt.select_related('sid', 'eid').order_by(order).all()
     pg = Paginator(StockLt, PGSZ)
-    StockLt = pg.page(st).object_list
     tot_pgs = pg.num_pages
+    st = min(max(st, 1), tot_pgs)
+    StockLt = pg.page(st).object_list
     if request.method == 'POST':
         form = allforms.SorterForm(request.POST)
         if form.is_valid() and 'sfilt' in request.POST:

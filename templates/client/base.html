@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% load static %}
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"></link>
+        <link href="{% static 'css/styles.css' %}" rel="stylesheet"></link>
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+        <title>
+            {% block title %}
+            Stock Market
+            {% endblock %}
+        </title>
+        <meta charset="utf-8">
+            <meta content="width=device-width, initial-scale=1" name="viewport"></meta>
+        </meta>
+    </head>
+    {% include 'message.html' %}
+    <body style="padding: 10px">
+        {% block nav %}
+        {% if request.user.is_authenticated %}
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="#">NavBar</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'client_home' %}">Home</a>{% endblock %}
+                </li>
+                <li class="nav-item">
+                  {% block nav_portfolio %}<a class="nav-link" aria-current="page" href="{% url 'client_portfolio' %}">Portfolio</a>{% endblock %}
+                </li>
+                <li class="nav-item">
+                  {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 1 %}">Stock Listings</a>{% endblock %}
+                </li>
+                <li class="nav-item">
+                  {% block nav_place_order %}<a class="nav-link" aria-current="page" href="{% url 'client_order' %}">Place Order</a>{% endblock %}
+                </li>
+              </ul>
+            </div>
+            <div class="collapse navbar-collapse flex-grow-1 text-right" id="navbarNav">
+              <ul class="navbar-nav ms-auto flex-nowrap">
+                <li class="nav-item">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.username }}</a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="{% url 'client_home' %}">Client</a></li>
+                        <li><a class="dropdown-item" href="{% url 'client_logout' %}">Log out</a></li>
+                    </ul>
+                </div>
+            </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        {% else %}
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="#">NavBar</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'client_home' %}">Client Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'broker_home' %}">Broker Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'client_login' %}">Client Login</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'broker_login' %}">Broker Login</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'client_signup' %}">Client SignUp</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="{% url 'broker_signup' %}">Broker SignUp</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        {% endif %}
+        {% endblock %}
+        <div align="center">
+          {% block content %}
+          {% endblock %}
+        </div>
+        {% if messages %}
+            <script>
+                var alertList = document.querySelectorAll('.alert');
+                    alertList.forEach(function (alert) {
+                        new bootstrap.Alert(alert);
+                    })
+            </script>
+        {% endif %}
+    </body>
+</html>

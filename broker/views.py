@@ -10,19 +10,11 @@ from django.utils import timezone
 # Create your views here.
 
 
-def get_broker(username):
-    broker = None
-    try:
-        broker = models.Broker.objects.get(username=username)
-    except Exception as e:
-        pass
-    return broker
-
-
 def check_user(request):
     if not request.user.is_authenticated:
         return False
-    if get_broker(request.user.username) is None:
+    broker = models.Broker.objects.filter(username=request.user.username).first()
+    if broker is None:
         messages.warning(request, 'You do not have access to this page.')
         return True
     return False
@@ -79,7 +71,7 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            if get_broker(username) is None:
+            if models.Broker.objects.filter(username=username).first() is None:
                 messages.warning(request, 'You can\'t login as a broker.')
             else:
                 user = authenticate(request, username=username, password=password)
@@ -117,7 +109,7 @@ def order_view(request):
     if not request.user.is_authenticated:
         messages.error(request, 'Please login first.')
         return HttpResponseRedirect('login')
-    brid = get_broker(request.user.username)
+    brid = models.Broker.objects.filter(username=request.user.username).first()
     assert brid is not None
     oldorder = models.OldOrder.objects.select_related('sid', 'eid', 'folio_id__clid__clid').filter(bid=brid)
     currorder = models.BuySellOrder.objects.select_related('sid', 'eid', 'folio_id__clid__clid').filter(bid=brid)
@@ -174,6 +166,6 @@ def approve_order_view(request):
         order.delete()
         neworder.save()
         broker.save()
-        
+
     # display orders from pending orders table
     pass
