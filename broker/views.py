@@ -47,7 +47,7 @@ def home_view(request):
     return render(request, 'broker/home.html')
 
 
-def order_view(request):
+def past_order_view(request):
     if check_user(request):
         return HttpResponseRedirect('/')
     if not request.user.is_authenticated:
@@ -111,3 +111,15 @@ def approve_order_view(request):
 
     # display orders from pending orders table
     pass
+
+
+def withdraw_view(request):
+    return render(request, 'broker/withdraw.html', {})
+
+
+def add_funds_view(request):
+    return render(request, 'broker/add_funds.html', {})
+
+
+def companies_view(request):
+    return render(request, 'broker/companies.html', {})

@@ -1,0 +1,13 @@
+{% extends 'client/base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Cancel Order
+{% endblock %}
+{% block nav_cancel_order %}
+<a class="nav-link active" aria-current="page" href="{% url 'client_cancel_order' %}">Cancel Order</a>
+{% endblock %}
+
+{% block content %}
+<h1>CANCEL ORDER</h1>
+{% endblock %} 

@@ -31,10 +31,19 @@
                   {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'broker_home' %}">Home</a>{% endblock %}
                 </li>
                 <li class="nav-item">
-                  {% block nav_past_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_orders' %}">Past Orders</a>{% endblock %}
+                  {% block nav_past_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_past_order' %}">Past Orders</a>{% endblock %}
                 </li>
                 <li class="nav-item">
                   {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>{% endblock %}
+                </li>
+                <li class="nav-item">
+                  {% block nav_companies %}<a class="nav-link" aria-current="page" href="{% url 'broker_companies' %}">Companies</a>{% endblock %}
+                </li>
+                <li class="nav-item">
+                  {% block nav_withdraw %}<a class="nav-link" aria-current="page" href="{% url 'broker_withdraw' %}">Withdraw</a>{% endblock %}
+                </li>
+                <li class="nav-item">
+                  {% block nav_add_funds %}<a class="nav-link" aria-current="page" href="{% url 'broker_add_funds' %}">Add Funds</a>{% endblock %}
                 </li>
               </ul>
             </div>

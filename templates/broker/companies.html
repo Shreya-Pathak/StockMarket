@@ -1,0 +1,13 @@
+{% extends 'broker/base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Companies
+{% endblock %}
+{% block nav_companies %}
+<a class="nav-link active" aria-current="page" href="{% url 'broker_companies' %}">Companies</a>
+{% endblock %}
+
+{% block content %}
+<h1>COMPANIES</h1>
+{% endblock %} 

@@ -79,7 +79,7 @@ def portfolio_view(request):
     return render(request, 'client/portfolio.html', context)
 
 
-def order_view(request):
+def place_order_view(request):
     if check_user(request):
         return HttpResponseRedirect('/home')
     if not request.user.is_authenticated:
@@ -89,7 +89,6 @@ def order_view(request):
     if request.method == 'POST':
         form = forms.OrderForm(data=request.POST)
         if form.is_valid():
-            print(form.cleaned_data)
             portfolio = form.cleaned_data['portfolio']
             broker = form.cleaned_data['broker']
             exchange = form.cleaned_data['exchange']
@@ -130,7 +129,7 @@ def order_view(request):
                 # create the order
                 neworder = models.BuySellOrder(folio_id=portfolio, bid=broker, eid=exchange, sid=stock, quantity=quantity, completed_quantity=0, price=price, creation_time=timezone.now(), order_type=order_type)
                 # neworder = models.PendingOrder(folio_id=portfolio, bid=broker, eid=exchange, sid=stock, quantity=quantity, price=price, creation_time=timezone.now(), order_type=order_type)
-                
+
                 # give commission to broker
                 broker.balance += commission
                 # update the holdings and holding balance of client
@@ -151,10 +150,11 @@ def order_view(request):
                 form = forms.OrderForm()
     else:
         form = forms.OrderForm()
-    return render(request, 'client/placeorder.html', {'form': form})
+    return render(request, 'client/place_order.html', {'form': form})
 
 
 def cancel_order_view(request):
+    return render(request, 'client/cancel_order.html', {})
     if check_user(request):
         return HttpResponseRedirect('/home')
     if not request.user.is_authenticated:
@@ -184,3 +184,23 @@ def cancel_order_view(request):
             order.delete()
     # display pending orders
     pass
+
+
+def past_order_view(request):
+    return render(request, 'client/past_order.html', {})
+
+
+def withdraw_view(request):
+    return render(request, 'client/withdraw.html', {})
+
+
+def wishlists_view(request):
+    return render(request, 'client/wishlists.html', {})
+
+
+def add_funds_view(request):
+    return render(request, 'client/add_funds.html', {})
+
+
+def companies_view(request):
+    return render(request, 'client/companies.html', {})

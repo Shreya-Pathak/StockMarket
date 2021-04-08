@@ -1,0 +1,13 @@
+{% extends 'client/base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Wishlists
+{% endblock %}
+{% block nav_wishlists %}
+<a class="nav-link active" aria-current="page" href="{% url 'client_wishlists' %}">Wishlists</a>
+{% endblock %}
+
+{% block content %}
+<h1>WISHLISTS</h1>
+{% endblock %} 

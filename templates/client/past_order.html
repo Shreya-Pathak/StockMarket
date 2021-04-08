@@ -1,0 +1,13 @@
+{% extends 'client/base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Past Orders
+{% endblock %}
+{% block nav_past_order %}
+<a class="nav-link active" aria-current="page" href="{% url 'client_past_order' %}">Past Orders</a>
+{% endblock %}
+
+{% block content %}
+<h1>PAST ORDERS</h1>
+{% endblock %} 
