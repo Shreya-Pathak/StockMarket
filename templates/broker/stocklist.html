@@ -1,16 +1,16 @@
-{% extends 'base_generic.html' %}
-
+{% extends 'broker/base.html' %}
 {% load crispy_forms_tags %}
 
+{% block title %}
+Stocklists
+{% endblock %}
+{% block nav_stocklist %}
+<a class="nav-link active" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>
+{% endblock %}
+
 {% block content %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js">
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js">
-</script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js">
-</script>
 <style>
-    .styled-table {
+.styled-table {
     border-collapse: collapse;
     margin: 25px 0;
     font-size: 0.9em;
@@ -39,100 +39,69 @@
     border-bottom: 2px solid #009879;
 }
 </style>
-<div>
-    <center>
-        <h2>
-            Stock Listings
-        </h2>
-        <table class="styled-table">
-            <tr>
-                <th>
-                    Ticker
-                </th>
-                <th>
-                    Exchange
-                </th>
-                <th>
-                    Latest Price
-                </th>
-                <th>
-                </th>
-                <th>
-                </th>
-            </tr>
-            {% for r in data %}
-            <tr>
-                <td>
-                    {{r.sid.ticker}}
-                </td>
-                <td>
-                    {{r.eid.name}}
-                </td>
-                <td>
-                    {{r.last_price}}
-                </td>
-                <td>
-                    <button class="btn btn-default" type="button">
-                        <a href="{% url 'analysis' r.sid.sid r.eid.eid %}">
-                            Price History
-                        </a>
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-default" type="button">
-                        <a href="{% url 'index' %}">
-                            Buy
-                        </a>
-                    </button>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-        <br>
-            <form method="POST">
-                {%csrf_token%}
-                <div class="container">
-                    <div class="row">
-                        {% for field in form  %}
-                        <div class="col-sm-4">
-                            <b>
-                                {{ field.label_tag }}
-                            </b>
-                            - {{ field }}
-                        </div>
-                        {% endfor %}
-                    </div>
+<div align="center">
+    <h2>Stock Listings</h2>
+    <table class="styled-table">
+        <tr>
+            <th>Ticker</th>
+            <th>Exchange</th>
+            <th>Latest Price</th>
+            <th></th>
+        </tr>
+        {% for r in data %}
+        <tr>
+            <td>{{ r.sid.ticker }}</td>
+            <td>{{ r.eid.name }}</td>
+            <td>{{ r.last_price }}</td>
+            <td>
+                <button class="btn btn-default" type="button">
+                    <a href="{% url 'analysis' r.sid.sid r.eid.eid %}">Price History</a>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if prev_exists %}
+        {% if next_exists %}
+            <a href="{% url 'stocklist' prev %}{{ params }}">
+                <button class="btn btn-primary me-4" name="previous"  >
+                    Previous
+                </button>
+            </a>
+        {% else %}
+            <a href="{% url 'stocklist' prev %}{{ params }}">
+                <button class="btn btn-primary" name="previous"  >
+                    Previous
+                </button>
+            </a>
+        {% endif %}
+    {% endif %}
+    {% if next_exists %}
+        <a href="{% url 'stocklist' next %}{{ params }}">
+            <button class="btn btn-primary" name="next"  >
+                Next
+            </button>
+        </a>
+    {% endif %}
+    <br><br>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row">
+                {% for field in form  %}
+                <div class="col-sm-4">
+                    <b>{{ field.label_tag }}</b> - {{ field }}
                 </div>
-                <br>
-                    <center>
-                        <button class="btn btn-primary" name="sfilt" type="submit" value="Submit">
-                            Refine
-                        </button>
-                    </center>
-                <br>
-            </form>
-    </center>
+                {% endfor %}
+            </div>
+        </div>
+        <br>
+        <center>
+            <button class="btn btn-primary" name="sfilt" type="submit" value="Submit">
+                Refine
+            </button>
+        </center>
+    </form>
 </div>
-{% if prev_exists %}
-    <a href="{% url 'stocklist' 0 prev %}{{params}}">
-        <button class="btn btn-primary" name="previous"  >
-            Previous
-        </button>
-    </a>
-{% endif %}
-{% if next_exists %}
-    <a href="{% url 'stocklist' 0 next %}{{params}}">
-        <button class="btn btn-primary" name="next"  >
-            Next
-        </button>
-    </a>
-{% endif %}
+
 {% endblock %}
-
-{% block client_sidebar %}
-{% endblock %}
-{% block broker_loggedout %}
-{% endblock %}
-
-
-

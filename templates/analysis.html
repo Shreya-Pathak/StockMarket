@@ -1,10 +1,12 @@
 {% extends 'base_generic.html' %} 
 
+{% block title %}
+Analysis
+{% endblock %} 
+{% block nav_analysis %}
+<a class="nav-link active" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>
+{% endblock %}
+
 {% block content %}
 {{ data|safe }}
 {% endblock %} 
-
-{% block client_loggedout %}
-{% endblock %}
-{% block broker_sidebar %}
-{% endblock %}

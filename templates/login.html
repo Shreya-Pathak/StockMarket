@@ -1,0 +1,64 @@
+{% extends 'base_generic.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Login
+{% endblock %}
+{% block nav_login %}
+<a class="nav-link active" aria-current="page" href="{% url 'login' %}">Login</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    input {
+      max-width: 12em;
+      margin: 5px;
+    }
+	.split {
+	  height: 70%;
+	  width: 50%;
+	  position: fixed;
+	  z-index: 1;
+	  top: 100px;
+	  overflow-x: hidden;
+	  padding-top: 20px;
+	}
+	.left {
+	  left: 0;
+	}
+	.right {
+	  right: 0;
+	}
+	.centered {
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  text-align: center;
+	}
+</style>
+<div class="split left">
+    <div class="centered">
+        <fieldset class="border p-2" style="width: 45em">
+            <legend class="w-auto">
+                Client Login
+            </legend>
+            <form method="post">
+                {% csrf_token %} {% crispy client_form %}
+            </form>
+        </fieldset>
+   </div>
+</div>
+<div class="split right">
+    <div class="centered">
+        <fieldset class="border p-2" style="width: 45em">
+            <legend class="w-auto">
+                Broker Login
+            </legend>
+            <form method="post">
+                {% csrf_token %} {% crispy broker_form %}
+            </form>
+        </fieldset>
+   </div>
+</div>
+{% endblock %}

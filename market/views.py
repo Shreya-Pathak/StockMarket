@@ -19,6 +19,13 @@ import matplotlib.pyplot as plt
 
 
 # Create your views here.
+def is_client(request):
+    if request.user.is_authenticated:
+        client = models.Client.objects.filter(username=request.user.username).first()
+        return (client is not None)
+    return False
+
+
 def index_view(request):
     return HttpResponseRedirect('stocklist')
 
@@ -34,17 +41,17 @@ def custom_query(query, format_vars=None):
     return rows
 
 
-def stocklist_view(request, client=0, st=0):
-    PGSZ = 8
+def stocklist_view(request, page_num=1):
+    client = is_client(request)
     exchange = request.GET.get('exchange', '')
     ticker = request.GET.get('ticker', '')
     order = request.GET.get('order', 'sid__ticker')
     StockLt = models.Stocklists.objects.filter(sid__ticker__icontains=ticker, eid__name__icontains=exchange)
     StockLt = StockLt.select_related('sid', 'eid').order_by(order).all()
-    pg = Paginator(StockLt, PGSZ)
+    pg = Paginator(StockLt, 8)
     tot_pgs = pg.num_pages
-    st = min(max(st, 1), tot_pgs)
-    StockLt = pg.page(st).object_list
+    page_num = min(max(page_num, 1), tot_pgs)
+    StockLt = pg.page(page_num).object_list
     if request.method == 'POST':
         form = allforms.SorterForm(request.POST)
         if form.is_valid() and 'sfilt' in request.POST:
@@ -57,7 +64,7 @@ def stocklist_view(request, client=0, st=0):
                 order = 'eid__name'
             elif sf == 'Latest Price':
                 order = 'last_price'
-            return redirect(f'/market/stocklist/{client}/1/?exchange=' + exc + '&ticker=' + tick + '&order=' + order)
+            return redirect(f'/market/stocklist/1/?exchange=' + exc + '&ticker=' + tick + '&order=' + order)
     else:
         form = allforms.SorterForm()
         form['sortfield'].initial = order if order != 'sid__ticker' else 'Ticker'
@@ -65,24 +72,32 @@ def stocklist_view(request, client=0, st=0):
         context = {'cur': order, 'form': form, 'data': data}
         paramstr = """?exchange=""" + exchange + '&ticker=' + ticker + '&order=' + order
         context['params'] = paramstr
-        if st > 1:
+        if page_num > 1:
             context['prev_exists'] = True
-            context['prev'] = st - 1
-        if st < tot_pgs:
+            context['prev'] = page_num - 1
+        if page_num < tot_pgs:
             context['next_exists'] = True
-            context['next'] = st + 1
-        if client == 0:
+            context['next'] = page_num + 1
+        if not client:
             return render(request, 'broker/stocklist.html', context)
         else:
             return render(request, 'client/stocklist.html', context)
 
 
-def analysis_view(request, sid, eid):
+def analysis_view(request, sid=0, eid=0):
+    if sid <= 0:
+        stock = models.Stock.objects.all().first()
+        sid = stock.sid
+    else:
+        stock = models.Stock.objects.get(sid=sid)
+    if eid <= 0:
+        exchange = models.ListedAt.objects.select_related('eid').filter(sid=stock).first().eid
+        eid = exchange.eid
+    else:
+        exchange = models.Exchange.objects.get(eid=eid)
     ph = custom_query("""
         SELECT price, creation_time FROM market_StockPricehistory as ph 
         WHERE ph.eid=%s and ph.sid=%s ORDER BY creation_time;""", [eid, sid])
-    stock = models.Stock.objects.get(sid=sid)
-    exchange = models.Exchange.objects.get(eid=eid)
     price = [d['price'] for d in ph]
     tsz = [d['creation_time'] for d in ph]
     dates = matplotlib.dates.date2num(tsz)

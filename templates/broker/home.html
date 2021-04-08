@@ -1,11 +1,13 @@
-{% extends '../base_generic.html' %} 
+{% extends 'broker/base.html' %} 
 {% load crispy_forms_tags %} 
 
-{% block content%}
+{% block title %}
+Home
+{% endblock %}
+{% block nav_home %}
+<a class="nav-link active" aria-current="page" href="{% url 'broker_home' %}">Home</a>
+{% endblock %}
+
+{% block content %}
 <h1>HomePage</h1>
 {% endblock %} 
-
-{% block client_sidebar %}
-{% endblock %}
-{% block broker_loggedout %}
-{% endblock %}

@@ -28,16 +28,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'client_home' %}">Home</a>{% endblock %}
+                  {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'broker_home' %}">Home</a>{% endblock %}
                 </li>
                 <li class="nav-item">
-                  {% block nav_portfolio %}<a class="nav-link" aria-current="page" href="{% url 'client_portfolio' %}">Portfolio</a>{% endblock %}
+                  {% block nav_past_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_orders' %}">Past Orders</a>{% endblock %}
                 </li>
                 <li class="nav-item">
                   {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_place_order %}<a class="nav-link" aria-current="page" href="{% url 'client_order' %}">Place Order</a>{% endblock %}
                 </li>
               </ul>
             </div>
@@ -47,8 +44,8 @@
                 <div class="dropdown">
                     <a class="nav-link dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.username }}</a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="{% url 'client_home' %}">Client</a></li>
-                        <li><a class="dropdown-item" href="{% url 'client_logout' %}">Log out</a></li>
+                        <li><a class="dropdown-item" href="{% url 'broker_home' %}">Broker</a></li>
+                        <li><a class="dropdown-item" href="{% url 'broker_logout' %}">Log out</a></li>
                     </ul>
                 </div>
             </li>

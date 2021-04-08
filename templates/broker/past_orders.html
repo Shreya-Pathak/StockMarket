@@ -1,0 +1,106 @@
+{% extends 'broker/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Past Orders
+{% endblock %}
+{% block nav_past_orders %}
+<a class="nav-link active" aria-current="page" href="{% url 'broker_orders' %}">Past Orders</a>
+{% endblock %}
+
+{% block content %}
+<style>
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 700px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+.styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+.btn {
+    position: relative;
+    top:20px !important;
+}
+</style>
+<h2>
+Past Orders
+</h2>
+<table class="styled-table">
+    <tr>
+        <th>Ticker</th>
+        <th>Quantity</th>
+        <th>Price Per Stock</th>
+        <th>Date</th>
+        <th>Client</th>
+        <th>Exchange</th>
+        <th>Type</th>
+    </tr>
+{% for j in oldorders %}
+    <tr>
+        <td>{{ j.sid.ticker }}</td>
+        <td>{{ j.quantity }}</td>
+        <td>{{ j.price }}</td>
+        <td>{{ j.creation_time }}</td>
+        <td>{{ j.folio_id.clid.clid.name }}</td>
+        <td>{{ j.eid.name }}</td>
+        <td>{{ j.order_type }}</td>
+    </tr>
+{% endfor %}
+</table>
+
+<h2>
+Current Orders
+</h2>
+<table class="styled-table">
+    <tr>
+        <th>Ticker</th>
+        <th>Initial Quantity</th>
+        <th>Completed Quantity</th>
+        <th>Price per Stock</th>
+        <th>Date</th>
+        <th>Client</th>
+        <th>Exchange</th>
+        <th>Type</th>
+    </tr>
+{% for j in currorder %}
+    <tr>
+        <td>{{ j.sid.ticker }}</td>
+        <td>{{ j.quantity }}</td>
+        <td>{{ j.completed_quantity }}</td>
+        <td>{{ j.price }}</td>
+        <td>{{ j.creation_time }}</td>
+        <td>{{ j.folio_id.clid.clid.name }}</td>
+        <td>{{ j.eid.name }}</td>
+        <td>{{ j.order_type }}</td>
+    </tr>
+{% endfor %}
+</table>	
+		
+<div class="container">    
+    <form method="POST">
+        {% csrf_token %}
+        {% crispy form %}
+    </form>
+</div>			
+{% endblock %}

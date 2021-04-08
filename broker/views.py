@@ -26,63 +26,7 @@ def index_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('home')
     else:
-        return HttpResponseRedirect('login')
-
-
-def signup_view(request):
-    if check_user(request):
-        return HttpResponseRedirect('/')
-    if request.user.is_authenticated:
-        messages.info(request, 'Please logout first.')
-        return HttpResponseRedirect('home')
-    if request.method == 'POST':
-        form = forms.SignUpForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data.get('name')
-            email = form.cleaned_data.get('email')
-            address = form.cleaned_data.get('address')
-            telephone = form.cleaned_data.get('telephone')
-            password = form.cleaned_data.get('password')
-            commission = form.cleaned_data.get('commission')
-            username = email.split('@')[0]
-            if not User.objects.filter(username=username).exists():
-                user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
-                user.save()
-                person = models.Person(name=name, address=address, telephone=telephone)
-                person.save()
-                broker = models.Broker(bid=person, username=username, balance=0, commission=commission)
-                broker.save()
-                messages.info(request, 'You can now login using your new account.')
-                return HttpResponseRedirect('login')
-            messages.error(request, "Username already exists.")
-    else:
-        form = forms.SignUpForm()
-    return render(request, 'broker/signup.html', {'form': form})
-
-
-def login_view(request):
-    if check_user(request):
-        return HttpResponseRedirect('/')
-    if request.user.is_authenticated:
-        messages.info(request, 'You are already logged in.')
-        return HttpResponseRedirect('home')
-    if request.method == 'POST':
-        form = forms.LoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            if models.Broker.objects.filter(username=username).first() is None:
-                messages.warning(request, 'You can\'t login as a broker.')
-            else:
-                user = authenticate(request, username=username, password=password)
-                if user is not None:
-                    login(request, user)
-                    messages.info(request, 'Successfully logged in.')
-                    return HttpResponseRedirect('home')
-                messages.error(request, 'Wrong username/password.')
-    else:
-        form = forms.LoginForm()
-    return render(request, 'broker/login.html', {'form': form})
+        return HttpResponseRedirect('/login')
 
 
 def logout_view(request):
@@ -91,7 +35,7 @@ def logout_view(request):
     if request.user.is_authenticated:
         logout(request)
         messages.info(request, 'Successfully logged out.')
-    return HttpResponseRedirect('login')
+    return HttpResponseRedirect('/login')
 
 
 def home_view(request):
@@ -99,7 +43,7 @@ def home_view(request):
         return HttpResponseRedirect('/')
     if not request.user.is_authenticated:
         messages.error(request, 'Please login first.')
-        return HttpResponseRedirect('login')
+        return HttpResponseRedirect('/login')
     return render(request, 'broker/home.html')
 
 
@@ -108,7 +52,7 @@ def order_view(request):
         return HttpResponseRedirect('/')
     if not request.user.is_authenticated:
         messages.error(request, 'Please login first.')
-        return HttpResponseRedirect('login')
+        return HttpResponseRedirect('/login')
     brid = models.Broker.objects.filter(username=request.user.username).first()
     assert brid is not None
     oldorder = models.OldOrder.objects.select_related('sid', 'eid', 'folio_id__clid__clid').filter(bid=brid)
@@ -130,8 +74,6 @@ def order_view(request):
             if sortfield != 'None':
                 oldorder = oldorder.order_by(sortfield)
                 currorder = currorder.order_by(sortfield)
-                # chosenlabel = dict(formog.fields['sortfield'].widget.choices)[sortfield]
-                # ch = formog.fields['sortfield'].widget.choices
                 formog.fields['sortfield'].initial = sortfield
             if ticker != '':
                 oldorder = oldorder.filter(sid__ticker__icontains=ticker)
@@ -147,7 +89,7 @@ def order_view(request):
     currorder = currorder.all()
 
     context = {'oldorders': oldorder, 'currorder': currorder, 'form': formog}
-    return render(request, 'broker/myorders.html', context)
+    return render(request, 'broker/past_orders.html', context)
 
 
 def approve_order_view(request):

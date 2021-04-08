@@ -5,7 +5,7 @@
 Stocklists
 {% endblock %}
 {% block nav_stocklist %}
-<a class="nav-link active" aria-current="page" href="{% url 'stocklist' 1 1 %}">Stock Listings</a>
+<a class="nav-link active" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>
 {% endblock %}
 
 {% block content %}
@@ -69,13 +69,13 @@ Stocklists
     </table>
     {% if prev_exists %}
     	{% if next_exists %}
-		    <a href="{% url 'stocklist' 1 prev %}{{ params }}">
+		    <a href="{% url 'stocklist' prev %}{{ params }}">
 		        <button class="btn btn-primary me-4" name="previous"  >
 		            Previous
 		        </button>
 		    </a>
 		{% else %}
-			<a href="{% url 'stocklist' 1 prev %}{{ params }}">
+			<a href="{% url 'stocklist' prev %}{{ params }}">
 		        <button class="btn btn-primary" name="previous"  >
 		            Previous
 		        </button>
@@ -83,7 +83,7 @@ Stocklists
 		{% endif %}
 	{% endif %}
 	{% if next_exists %}
-	    <a href="{% url 'stocklist' 1 next %}{{ params }}">
+	    <a href="{% url 'stocklist' next %}{{ params }}">
 	        <button class="btn btn-primary" name="next"  >
 	            Next
 	        </button>
