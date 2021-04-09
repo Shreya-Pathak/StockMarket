@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-Stocklists
+Stock Listings
 {% endblock %}
 {% block nav_stocklist %}
 <a class="nav-link active" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>
@@ -46,6 +46,7 @@ Stocklists
             <th>Ticker</th>
             <th>Exchange</th>
             <th>Latest Price</th>
+            <th>Change</th>
             <th></th>
             <th></th>
         </tr>
@@ -54,15 +55,26 @@ Stocklists
             <td>{{ r.sid.ticker }}</td>
             <td>{{ r.eid.name }}</td>
             <td>{{ r.last_price }}</td>
+            <td>{{ r.change }} %</td>
             <td>
                 <button class="btn btn-default" type="button">
                     <a href="{% url 'analysis' r.sid.sid r.eid.eid %}">Price History</a>
                 </button>
             </td>
             <td>
-                <button class="btn btn-default" type="button">
-                    <a href="{% url 'index' %}">Buy</a>
-                </button>
+                <form name="form_{{ r.last_price_id }}" method="post" action="{% url 'client_place_order' %}" class="inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="order_type" value="Buy">
+                  <input type="hidden" name="quantity" value="0">
+                  <input type="hidden" name="portfolio" value="0">
+                  <input type="hidden" name="stock" value="{{ r.sid.sid }}">
+                  <input type="hidden" name="exchange" value="{{ r.eid.eid }}">
+                  <input type="hidden" name="broker" value="0">
+                  <input type="hidden" name="price" value="{{ r.last_price }}">
+                  <button class="btn btn-default" type="button">
+                    <a href="javascript:;" name="submit" value="Place Order" onclick="document.form_{{ r.last_price_id }}.submit(); return false;">Buy</a>
+                  </button>
+                </form>
             </td>
         </tr>
         {% endfor %}

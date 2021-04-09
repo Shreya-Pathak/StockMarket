@@ -29,13 +29,13 @@ def trigger():
                 quantity__gt=F('completed_quantity')
             )
 
-            Stocklists_entry = models.Stocklists.objects.get(sid=order.sid, eid=order.eid)
-            previous_price = Stocklists_entry.last_price
-            total_stocks = order.sid.total_stocks
-            print('Stock =', order.sid.__dict__, '| Previous price =', previous_price)
+            print('Stock =', order.sid.__dict__)
 
             # Exchange happens, so update index prices and stock prices
             if len(order_match_set) > 0:
+                Listedat_entry = models.ListedAt.objects.get(sid=order.sid, eid=order.eid)
+                previous_price = Listedat_entry.last_price
+                total_stocks = order.sid.total_stocks
                 new_stock_entry = models.StockPriceHistory(
                     sid=order.sid,
                     eid=order.eid,
@@ -43,24 +43,27 @@ def trigger():
                     price=order.price
                 )
                 stockpricehistory_list.append(new_stock_entry)
+                Listedat_entry.last_price = order.price
+                Listedat_entry.change = (order.price / previous_price - 1) * 100
+                Listedat_entry.save(update_fields=['last_price', 'change'])
 
                 # Find Relevant Indices
                 index_match = models.PartOfIndex.objects.select_related('iid').filter(iid__eid=order.eid, sid=order.sid)
-                
                 # Index weightage: Presently One-to-One Market-Cap
                 for index_id in index_match:
                     index_object = index_id.iid
-                    index_object.last_price += (order.price - previous_price) * total_stocks / index_object.base_divisor
+                    prev_idx_price = index_object.last_price
+                    new_idx_price = prev_idx_price + ((order.price - previous_price) * total_stocks) / index_object.base_divisor
                     new_index_entry = models.IndexPriceHistory(
                         iid=index_object,
                         creation_time=timezone.now(),
                         price=index_object.last_price
                     )
-                    index_object.save(update_fields=['last_price'])
                     indexpricehistory_list.append(new_index_entry)
-
-                Stocklists_entry.last_price = order.price
-                Stocklists_entry.save(update_fields=['last_price'])
+                    index_object.last_price = new_idx_price
+                    index_object.change = (new_idx_price / prev_idx_price - 1) * 100
+                    index_object.save(update_fields=['last_price', 'change'])
+                
 
             rem_quantity = order.quantity - order.completed_quantity
             assert rem_quantity != 0
@@ -84,16 +87,14 @@ def trigger():
                     seller.balance += order.price * order_match.quantity
                     seller.save()
 
-            if len(order_match_set) > 0:
-                bulk_update(order_match_set, update_fields=['completed_quantity'], batch_size=1000)
+            bulk_update(order_match_set, update_fields=['completed_quantity'], batch_size=1000)
 
             buy_stock_holding.quantity += matched_quantity
             buy_stock_holding.total_price += matched_quantity * order.price
             order.completed_quantity += matched_quantity
             buy_stock_holding.save(update_fields=['quantity', 'total_price'])
 
-        if len(current_buy_orders) > 0:
-            bulk_update(current_buy_orders, update_fields=['completed_quantity'], batch_size=1000)
+        bulk_update(current_buy_orders, update_fields=['completed_quantity'], batch_size=1000)
 
         # Delete completed orders
         completed_orders = models.BuySellOrder.objects.filter(quantity=F('completed_quantity'))

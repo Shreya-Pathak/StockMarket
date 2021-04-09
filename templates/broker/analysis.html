@@ -1,0 +1,83 @@
+{% extends 'broker/base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Analysis
+{% endblock %}
+{% block nav_analysis %}
+<a class="nav-link active" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+.container {
+  width: 80%;
+  height: 500px;
+  margin: auto;
+  padding: 10px;
+}
+.one {
+  width: 40%;
+  height: 500px;
+  float: left;
+}
+.two {
+  margin-left: 15%;
+  height: 500px;
+} 
+.buttonimg{
+	width:auto;
+	height:auto;
+}
+.btn-group button {
+  background-color: #4CAF50; /* Green background */
+  border: 1px solid green; /* Green border */
+  color: white; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+}
+/* Clear floats (clearfix hack) */
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+.btn-group button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #3e8e41;
+}
+</style>
+
+<script>
+function norm() {
+  document.getElementById('theImage').src="{{ cp }}";
+}
+function ma5() {
+  document.getElementById('theImage').src="{{ ma }}}";
+}
+function ma10() {
+  document.getElementById('theImage').src="{{ ma1 }}}";
+}
+</script>
+
+<section class="container">
+<div class="one">
+	<img src="{{ data }}" alt="" height="450" width="450" />
+</div>
+<div class="two">
+	<div class="buttonimg">
+		<img id='theImage' src="{{ cp }}" alt="" height="450" width="450" />
+		<br>
+		<div class="btn-group">
+		  <button type="button" onclick="norm()">Closing Price</button>
+		  <button type="button" onclick="ma5()">Moving Avg(5)</button>
+		  <button onclick="ma10()">Moving Avg(10)</button>
+		</div>
+	</div>
+</div>
+</section>
+{% endblock %} 

@@ -18,6 +18,9 @@
 	padding: 14px 16px;
 	text-decoration: none;
 }
+.navbar {
+	top: 0;
+}
 .notification {
 	position: absolute;
 	top: 5rem;
@@ -26,4 +29,28 @@
 .dropdown-menu {
 	min-width: 140px !important;
 }
-
+.marquee {
+  white-space: nowrap;
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+.marquee p {
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.1);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  animation: marquee 25s linear infinite;
+  animation-direction: alternate;
+  animation-delay: 0s
+}
+.marquee p:hover {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-100%, 0); }
+}

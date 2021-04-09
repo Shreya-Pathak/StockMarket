@@ -32,11 +32,16 @@ Place Order
 	}
 </style>
 <br>
-<div class="container col-lg-4">	
-	<form method="POST">
-        {% csrf_token %}
-       	{% crispy form %}
-    </form>
+<div class="container">
+	<fieldset class="border p-2" style="width: 45em">
+		<legend class="w-auto">
+		    Place Order
+		</legend>
+		<form method="POST">
+		    {% csrf_token %}
+		   	{% crispy form %}
+		</form>
+	</fieldset>	
 </div>
 {% endblock %}
 

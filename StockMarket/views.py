@@ -1,9 +1,9 @@
-from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import User
 import StockMarket.forms as forms
 import market.models as models
+from market.views import render
 from django.contrib import messages
 
 # Create your views here.

@@ -3,6 +3,7 @@
     <head>
         {% load static %}
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"></link>
+        <link href="{% static 'fontawesome/css/all.css' %}" rel="stylesheet">
         <link href="{% static 'css/styles.css' %}" rel="stylesheet"></link>
         <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
         <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
@@ -16,9 +17,9 @@
         </meta>
     </head>
     {% include 'message.html' %}
-    <body style="padding: 10px">
+    <body>
         {% block nav %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
           <div class="container-fluid">
             <a class="navbar-brand" href="#">NavBar</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,19 +44,17 @@
           </div>
         </nav>
         {% endblock %}
-        <div class="container-fluid">
-            <div align="center">
-                {% block content %}
-                {% endblock %}
-            </div>
+        <div align="center" style="padding-top: 4rem">
+            {% block content %}
+            {% endblock %}
         </div>
+        <br><br><br>
+        {% include 'live_ticker.html' %}
         {% if messages %}
-        <script>
-            var alertList = document.querySelectorAll('.alert');
-                alertList.forEach(function (alert) {
-                    new bootstrap.Alert(alert);
-                })
-        </script>
+            <script>
+                var alertList = document.querySelectorAll('.alert');
+                alertList.forEach(function (alert) { new bootstrap.Alert(alert); })
+            </script>
         {% endif %}
     </body>
 </html>

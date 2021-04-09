@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.contrib.auth.models import User
@@ -6,6 +5,7 @@ import broker.forms as forms
 import market.models as models
 from django.contrib import messages
 from django.utils import timezone
+from market.views import render
 
 # Create your views here.
 

@@ -9,15 +9,18 @@ from django.contrib.auth.models import User
 import market.models as models
 import pandas as pd
 from tqdm import tqdm
+from decimal import Decimal
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 from django.contrib.auth.hashers import make_password
+from django_bulk_update.helper import bulk_update
 
 random.seed(69)
 
 
 def insert_user_person_client_broker():
+    print('Creating users')
     df = pd.read_csv('csv/persons.csv', sep=',', nrows=100)
     users, persons = [], []
     for i, row in tqdm(df.iterrows(), total=len(df.index)):
@@ -54,6 +57,7 @@ def insert_user_person_client_broker():
 
 
 def insert_reg_at():
+    print('Inserting RegisteredAt tuples')
     regats = []
     exchanges = list(models.Exchange.objects.all())
     for broker in models.Broker.objects.all():
@@ -65,6 +69,7 @@ def insert_reg_at():
 
 
 def insert_stockprice(batch_size=100000):
+    print('Inserting Stock Prices')
     ticker_obj = {}
     for st in models.Stock.objects.all():
         ticker_obj[st.ticker] = st
@@ -106,37 +111,58 @@ def insert_stockprice(batch_size=100000):
 
 
 def insert_last_prices():
-    listedats = list(models.ListedAt.objects.select_related('sid', 'eid').all())
-    last_prices = []
     print("Updating Latest Prices")
+    listedats = list(models.ListedAt.objects.select_related('sid', 'eid').all())
+    last_prices, prices = [], []
     for st_ex in tqdm(listedats):
         try:
-            price = models.StockPriceHistory.timescale.filter(sid=st_ex.sid, eid=st_ex.eid).latest().price
+            obj = models.StockPriceHistory.timescale.filter(sid=st_ex.sid, eid=st_ex.eid).latest()
+            price = obj.price
+            stamp = obj.creation_time
         except Exception as e:
             stamp = make_aware(datetime.now())
-            price = random.randint(30, 90) + (random.randint(0, 100) / 100)
+            price = Decimal(random.randint(30, 90) + (random.randint(0, 100) / 100))
             cur = models.StockPriceHistory(sid=st_ex.sid, eid=st_ex.eid, creation_time=stamp, price=price)
-            cur.save()
+            prices.append(cur)
         finally:
-            last_price = models.Stocklists(sid=st_ex.sid, eid=st_ex.eid, last_price=price)
-            last_prices.append(last_price)
-    models.Stocklists.objects.bulk_create(last_prices)
+            change = random.randint(-10, 10) + (random.randint(0, 100) / 100)
+            new_stamp = stamp + timedelta(seconds=random.randint(10, 20))
+            new_price = price * Decimal(1 + change / 100)
+            st_ex.last_price = new_price
+            st_ex.change = change
+            cur = models.StockPriceHistory(sid=st_ex.sid, eid=st_ex.eid, creation_time=new_stamp, price=new_price)
+            prices.append(cur)
+            last_prices.append(st_ex)
+    bulk_update(last_prices, update_fields=['last_price', 'change'], batch_size=1000)
+    models.StockPriceHistory.objects.bulk_create(prices)
 
+    last_prices, prices = [], []
     indices = list(models.Indices.objects.all())
     for idx in tqdm(indices):
         try:
-            price = models.IndexPriceHistory.timescale.filter(iid=idx.iid).latest().price
+            obj = models.IndexPriceHistory.timescale.filter(iid=idx.iid).latest()
+            price = obj.price
+            stamp = obj.creation_time
         except Exception as e:
             stamp = make_aware(datetime.now())
-            price = random.randint(30, 90) + (random.randint(0, 100) / 100)
+            price = Decimal(random.randint(30, 90) + (random.randint(0, 100) / 100))
             cur = models.IndexPriceHistory(iid=idx, creation_time=stamp, price=price)
-            cur.save()
+            prices.append(cur)
         finally:
-            idx.last_price = price
-            idx.save(update_fields=['last_price'])
+            change = random.randint(-10, 10) + (random.randint(0, 100) / 100)
+            new_stamp = stamp + timedelta(seconds=random.randint(10, 20))
+            new_price = price * Decimal(1 + change / 100)
+            idx.last_price = new_price
+            idx.change = change
+            cur = models.IndexPriceHistory(iid=idx, creation_time=new_stamp, price=new_price)
+            prices.append(cur)
+            last_prices.append(idx)
+    bulk_update(last_prices, update_fields=['last_price', 'change'], batch_size=1000)
+    models.IndexPriceHistory.objects.bulk_create(prices)
 
 
 def insert_indexprice(batch_size=100000):
+    print('Inserting Index Prices')
     index_obj = {}
     for idx in models.Indices.objects.all():
         index_obj[idx.ticker] = idx
@@ -171,11 +197,11 @@ def insert_indexprice(batch_size=100000):
 
 
 def insert_portfolio_holdings():
-    stocks = list(models.Stock.objects.all())
     print("Inserting Portfolio Holdings")
+    stocks = list(models.Stock.objects.all())
     last_price, sector = {}, {}
     for stock in tqdm(stocks):
-        last_price[stock.sid] = models.Stocklists.objects.filter(sid=stock.sid).first().last_price
+        last_price[stock.sid] = models.ListedAt.objects.filter(sid=stock.sid).first().last_price
         sector[stock.sid] = models.Company.objects.get(cid=stock.sid).sector
 
     for client in models.Client.objects.all():
@@ -207,13 +233,13 @@ def insert_portfolio_holdings():
 
 
 def generate_bases():
-    indices = list(models.Indices.objects.all())
     print("Inserting Bases")
+    indices = list(models.Indices.objects.all())
     for index in indices:
         last_value = index.last_price
         market_cap = 0
         for stidx in models.PartOfIndex.objects.filter(iid=index):
-            last_price_stock = models.Stocklists.objects.filter(sid=stidx.sid, eid=index.eid).first()
+            last_price_stock = models.ListedAt.objects.filter(sid=stidx.sid, eid=index.eid).first()
             market_cap += last_price_stock.last_price * stidx.sid.total_stocks
         index.base_divisor = market_cap / last_value
         index.save(update_fields=['base_divisor'])

@@ -28,6 +28,7 @@ class Indices(models.Model):
     index_name = models.TextField(unique=True, blank=False, null=False)
     ticker = models.TextField(unique=True, blank=False, null=False)
     last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    change = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     base_divisor = models.DecimalField(max_digits=30, decimal_places=4, default=100)
 
     class Meta:
@@ -98,6 +99,7 @@ class Wishlist(models.Model):
 
 class BankAccount(models.Model):
     account_number = models.BigIntegerField(primary_key=True, db_column='account_number')
+    bank_name = models.TextField(blank=False, null=False)
     pid = models.ForeignKey(Person, models.DO_NOTHING, default=0, db_column='pid')
     balance = models.DecimalField(max_digits=15, decimal_places=2)
 
@@ -109,6 +111,8 @@ class ListedAt(models.Model):
     listed_id = models.AutoField(primary_key=True, db_column='listed_id')
     sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
     eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
+    last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    change = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['sid', 'eid'], name='exchange_stock_pkey')]
@@ -232,16 +236,6 @@ class BuySellOrder(models.Model):
 
     class Meta:
         constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buysell_state_check')]
-
-
-class Stocklists(models.Model):
-    last_price_id = models.AutoField(primary_key=True, db_column='last_price_id')
-    sid = models.ForeignKey(Stock, models.DO_NOTHING, db_column='sid')
-    eid = models.ForeignKey(Exchange, models.DO_NOTHING, db_column='eid')
-    last_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=['sid', 'eid'], name='stock_exchange_price_pkey')]
 
 
 class LockedAtomicTransaction(Atomic):
