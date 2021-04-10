@@ -2,12 +2,52 @@
 {% load crispy_forms_tags %} 
 
 {% block title %}
-Wishlists
+Wishlist
 {% endblock %}
 {% block nav_wishlists %}
-<a class="nav-link active" aria-current="page" href="{% url 'client_wishlists' %}">Wishlists</a>
+<a class="nav-link active" aria-current="page" href="{% url 'client_wishlists' %}">Wishlist</a>
 {% endblock %}
 
 {% block content %}
-<h1>WISHLISTS</h1>
+<style>
+.select2-selection {
+    padding: 0 !important;
+}
+.select2-selection__rendered {
+    line-height: 38px !important;
+    text-align: left !important;
+    padding-left: .75rem !important;
+}
+.select2-container .select2-selection--single {
+    height: 38px !important;
+}
+.select2-selection__arrow {
+    height: 38px !important;
+}
+</style>
+<br>
+{% for wishlist_name, stock_list in data.items %}
+<h2>{{ wishlist_name }}</h2>
+<table class="styled-table">
+    <tr>
+        <th>Ticker</th>
+        <th>Total Stocks</th>
+        <th></th>
+    </tr>
+    {% for stock_wish, stock in stock_list %}
+    <tr>
+        <td>{{ stock.ticker }}</td>
+        <td>{{ stock.total_stocks }}</td>
+        <td><a href="{% url 'client_wishlists' %}?id={{ stock_wish.stock_wish_id }}">Delete</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endfor %}
+<br>
+<div class="container col-lg-4">	
+	<form method="POST">
+    	{% csrf_token %}
+   		{% crispy form %}
+    </form>
+</div>
 {% endblock %} 

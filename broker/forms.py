@@ -39,11 +39,11 @@ class LoginForm(forms.Form):
         self.helper.layout = Layout('username', 'password', Submit('submit', 'Login', css_class='btn btn-primary'))
 
 
-FRUIT_CHOICES = [('None','None'),('price', 'Price'), ('creation_time','Date'), ('quantity', 'Quantity')]
+SORT_CHOICES = [('None','None'),('price', 'Price'), ('creation_time','Date'), ('quantity', 'Quantity')]
 TYPE_CHOICES=[('All', 'All'), ('Buy', 'Buy'), ('Sell', 'Sell')]
 
 class SorterForm(forms.Form):
-    sortfield = forms.CharField(label='Sort by', widget=forms.Select(choices=FRUIT_CHOICES), required=False)
+    sortfield = forms.CharField(label='Sort by', widget=forms.Select(choices=SORT_CHOICES), required=False)
     order_type = forms.CharField(label='Order type', widget=forms.Select(choices=TYPE_CHOICES), required=False)
     ticker = forms.CharField(label='Ticker', max_length=30, required=False)
     exchange = forms.CharField(label='Exchange', max_length=30, required=False)
@@ -59,9 +59,6 @@ class SorterForm(forms.Form):
         self.fields['ticker'].label='Ticker'
         self.fields['exchange'].label='Exchange'
         self.fields['client'].label='Client'
-        # self.helper.field_class = 'col-sm-4'
         self.helper.layout = Layout(Div(Div('ticker',css_class='col-lg-4'),Div('exchange',css_class='col-lg-4'),Div('client',css_class='col-lg-4'),css_class='row w-50 container justify-content-center'),
                     Div(Div('sortfield',css_class='col-lg-2'),Div('order_type',css_class='col-lg-2'),css_class='row w-20 container justify-content-center with-margin'),
                     Submit('submit', 'Filter', css_class=' justify-content-center  '))
-            # 'client',css_class='row')
-            # Div('sortfield','order_type',css_class='with-margin'), Submit('submit', 'Add Portfolio', css_class='btn btn-primary'))

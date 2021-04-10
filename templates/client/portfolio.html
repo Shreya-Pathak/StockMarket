@@ -7,21 +7,40 @@ Portfolios
 {% block nav_portfolio %}
 <a class="nav-link active" aria-current="page" href="{% url 'client_portfolio' %}">Portfolio</a>
 {% endblock %}
+
 {% block content %}
+<style>
+.select2-selection {
+    padding: 0 !important;
+}
+.select2-selection__rendered {
+    line-height: 38px !important;
+    text-align: left !important;
+    padding-left: .75rem !important;
+}
+.select2-container .select2-selection--single {
+    height: 38px !important;
+}
+.select2-selection__arrow {
+    height: 38px !important;
+}
+</style>
 <br>
-{% for k,v in data.items %}
-<h2>{{ k }}</h2>
+{% for folio_name, stock_list in data.items %}
+<h2>{{ folio_name }}</h2>
 <table class="styled-table">
     <tr>
         <th>Ticker</th>
         <th>Quantity</th>
         <th>Total Price</th>
+        <th></th>
     </tr>
-    {% for j in v %}
+    {% for holding, stock in stock_list %}
     <tr>
-        <td>{{ j.1 }}</td>
-        <td>{{ j.0.quantity }}</td>
-        <td>{{j.0.total_price}}</td>
+        <td>{{ stock.ticker }}</td>
+        <td>{{ holding.quantity }}</td>
+        <td>{{ holding.total_price }}</td>
+        <td><a href="{% url 'client_portfolio' %}?id={{ holding.hold_id }}">Remove</a></td>
     </tr>
     {% endfor %}
 </table>

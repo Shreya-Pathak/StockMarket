@@ -11,97 +11,78 @@ Stock Listings
 {% block content %}
 <style>
 .styled-table {
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.9em;
-    font-family: sans-serif;
-    min-width: 700px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-.styled-table thead tr {
-    background-color: #009879;
-    color: #ffffff;
-    text-align: left;
-}
-.styled-table th,
-.styled-table td {
-    padding: 12px 15px;
-}
-.styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-
-.styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
-}
-
-.styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #009879;
+  min-width: 700px !important;
 }
 </style>
 <div align="center">
-    <h2>Stock Listings</h2>
-    <table class="styled-table">
-        <tr>
-            <th>Ticker</th>
-            <th>Exchange</th>
-            <th>Latest Price</th>
-            <th></th>
-        </tr>
-        {% for r in data %}
-        <tr>
-            <td>{{ r.sid.ticker }}</td>
-            <td>{{ r.eid.name }}</td>
-            <td>{{ r.last_price }}</td>
-            <td>
-                <button class="btn btn-default" type="button">
-                    <a href="{% url 'analysis' r.sid.sid r.eid.eid %}">Price History</a>
-                </button>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% if prev_exists %}
-        {% if next_exists %}
-            <a href="{% url 'stocklist' prev %}{{ params }}">
-                <button class="btn btn-primary me-4" name="previous"  >
-                    Previous
-                </button>
-            </a>
-        {% else %}
-            <a href="{% url 'stocklist' prev %}{{ params }}">
-                <button class="btn btn-primary" name="previous"  >
-                    Previous
-                </button>
-            </a>
-        {% endif %}
-    {% endif %}
+  <h2>Stock Listings</h2>
+  <table class="styled-table">
+    <tr>
+      <th>Ticker</th>
+      <th>Exchange</th>
+      <th>Latest Price</th>
+      <th>Change</th>
+      <th></th>
+    </tr>
+    {% for r in data %}
+    <tr>
+      <td>{{ r.sid.ticker }}</td>
+      <td>{{ r.eid.name }}</td>
+      <td>$ {{ r.last_price }}</td>
+      {% if r.change < 0 %}
+      <td style="color:darkred;">{{ r.change }} %</td>
+      {% else %}
+      <td style="color:green;">{{ r.change }} %</td>
+      {% endif %}
+      <td>
+        <button class="btn btn-default" type="button">
+          <a href="{% url 'analysis' r.sid.sid r.eid.eid %}">Price History</a>
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% if prev_exists %}
     {% if next_exists %}
-        <a href="{% url 'stocklist' next %}{{ params }}">
-            <button class="btn btn-primary" name="next"  >
-                Next
-            </button>
-        </a>
+      <a href="{% url 'stocklist' prev %}{{ params }}">
+        <button class="btn btn-primary me-4" name="previous"  >
+          Previous
+        </button>
+      </a>
+    {% else %}
+      <a href="{% url 'stocklist' prev %}{{ params }}">
+        <button class="btn btn-primary" name="previous"  >
+          Previous
+        </button>
+      </a>
     {% endif %}
-    <br><br>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="container">
-            <div class="row">
-                {% for field in form  %}
-                <div class="col-sm-4">
-                    <b>{{ field.label_tag }}</b> - {{ field }}
-                </div>
-                {% endfor %}
-            </div>
+  {% endif %}
+  {% if next_exists %}
+    <a href="{% url 'stocklist' next %}{{ params }}">
+      <button class="btn btn-primary" name="next"  >
+        Next
+      </button>
+    </a>
+  {% endif %}
+  <br><br>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="container">
+      <div class="row">
+        {% for field in form  %}
+        <div class="col-sm-4">
+          <b>{{ field.label_tag }}</b> - {{ field }}
         </div>
-        <br>
-        <center>
-            <button class="btn btn-primary" name="sfilt" type="submit" value="Submit">
-                Refine
-            </button>
-        </center>
-    </form>
+        {% endfor %}
+      </div>
+    </div>
+    <br>
+    <center>
+      <button class="btn btn-primary" name="sfilt" type="submit" value="Submit">
+        Refine
+      </button>
+    </center>
+  </form>
 </div>
 
 {% endblock %}

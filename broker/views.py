@@ -8,6 +8,11 @@ from django.utils import timezone
 from market.views import render
 
 # Create your views here.
+def check_type(v, t=int):
+    try:
+        return t(v)
+    except:
+        return None
 
 
 def check_user(request):
@@ -22,7 +27,7 @@ def check_user(request):
 
 def index_view(request):
     if check_user(request):
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/home')
     if request.user.is_authenticated:
         return HttpResponseRedirect('home')
     else:
@@ -31,7 +36,7 @@ def index_view(request):
 
 def logout_view(request):
     if check_user(request):
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/home')
     if request.user.is_authenticated:
         logout(request)
         messages.info(request, 'Successfully logged out.')
@@ -40,7 +45,7 @@ def logout_view(request):
 
 def home_view(request):
     if check_user(request):
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/home')
     if not request.user.is_authenticated:
         messages.error(request, 'Please login first.')
         return HttpResponseRedirect('/login')
@@ -49,7 +54,7 @@ def home_view(request):
 
 def past_order_view(request):
     if check_user(request):
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/home')
     if not request.user.is_authenticated:
         messages.error(request, 'Please login first.')
         return HttpResponseRedirect('/login')
@@ -93,24 +98,59 @@ def past_order_view(request):
 
 
 def approve_order_view(request):
-    if request.method == 'POST':
-        order_id = get_from_request(request.POST)
-        broker = models.Broker.objects.filter(username=request.user.username).first()
-        order = models.PendingOrder.objects.select_related('bid').filter(pk=order_id).first()
-        if order.bid.bid != broker.bid:
-            messages.error(request, '')
-            return HttpResponseRedirect('approve_order')
-        neworder = models.BuySellOrder(folio_id=order.folio_id, bid=order.bid, eid=order.eid, sid=order.sid, quantity=order.quantity, completed_quantity=0, price=order.price, creation_time=order.creation_time, order_type=order.order_type)
-        delay = (timezone.now() - order.creation_time).total_seconds()
-        n = broker.orders_approved
-        broker.latency += (delay - broker.latency) // (n + 1)
-        broker.orders_approved += 1
-        order.delete()
-        neworder.save()
-        broker.save()
+    if check_user(request):
+        return HttpResponseRedirect('/home')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please login first.')
+        return HttpResponseRedirect('/login')
+    brid = models.Broker.objects.filter(username=request.user.username).first()
+    assert brid is not None
+    order_id = check_type(request.GET.get('order', None), int)
+    if order_id is not None:
+        order = models.PendingOrder.objects.filter(pk=order_id, bid=brid).first()
+        if order is not None:
+            commission = (brid.commission * order.quantity * order.price) / 100
+            neworder = models.BuySellOrder(folio_id=order.folio_id, bid=order.bid, eid=order.eid, sid=order.sid, quantity=order.quantity, completed_quantity=0, price=order.price, creation_time=order.creation_time, order_type=order.order_type)
+            delay = (timezone.now() - order.creation_time).total_seconds()
+            brid.latency += (delay - brid.latency) // (brid.orders_approved + 1)
+            brid.orders_approved += 1
+            brid.balance += commission
+            order.delete()
+            neworder.save()
+            brid.save()
+            messages.success(request, 'Order approved.')
+        else:
+            messages.error(request, 'This order does not exist.')
+        return HttpResponseRedirect('approve_order')
 
-    # display orders from pending orders table
-    pass
+    pendingorder = models.PendingOrder.objects.select_related('sid', 'eid', 'folio_id__clid__clid').filter(bid=brid)
+    formog = forms.SorterForm()
+
+    if request.method == 'POST':
+        form = forms.SorterForm(request.POST)
+        if form.is_valid():
+            sortfield = form.cleaned_data.get('sortfield')
+            order_type = form.cleaned_data.get('order_type')
+            ticker = form.cleaned_data.get('ticker')
+            exchange = form.cleaned_data.get('exchange')
+            client = form.cleaned_data.get('client')
+            if order_type != 'All':
+                pendingorder = pendingorder.filter(order_type=order_type)
+                formog.fields['order_type'].initial = order_type
+            if sortfield != 'None':
+                pendingorder = pendingorder.order_by(sortfield)
+                formog.fields['sortfield'].initial = sortfield
+            if ticker != '':
+                pendingorder = pendingorder.filter(sid__ticker__icontains=ticker)
+            if exchange != '':
+                pendingorder = pendingorder.filter(eid__name__icontains=exchange)
+            if client != '':
+                pendingorder = pendingorder.filter(folio_id__clid__clid__name__icontains=client)
+
+    pendingorder = pendingorder.all()
+
+    context = {'pendingorders': pendingorder, 'form': formog}
+    return render(request, 'broker/approve_orders.html', context)
 
 
 def withdraw_view(request):

@@ -2,10 +2,10 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-Past Orders
+Approve Orders
 {% endblock %}
-{% block nav_past_orders %}
-<a class="nav-link active" aria-current="page" href="{% url 'broker_past_order' %}">Past Orders</a>
+{% block nav_approve_orders %}
+<a class="nav-link active" aria-current="page" href="{% url 'broker_approve_order' %}">Approve Orders</a>
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@ Past Orders
 }
 </style>
 <h2>
-Past Orders
+Pending Orders
 </h2>
 <table class="styled-table">
     <tr>
@@ -30,8 +30,9 @@ Past Orders
         <th>Client</th>
         <th>Exchange</th>
         <th>Type</th>
+        <th></th>
     </tr>
-{% for j in oldorders %}
+{% for j in pendingorders %}
     <tr>
         <td>{{ j.sid.ticker }}</td>
         <td>{{ j.quantity }}</td>
@@ -40,35 +41,10 @@ Past Orders
         <td>{{ j.folio_id.clid.clid.name }}</td>
         <td>{{ j.eid.name }}</td>
         <td>{{ j.order_type }}</td>
+        <td><a href="{% url 'broker_approve_order' %}?order={{ j.order_id }}">Approve</a></td>
     </tr>
 {% endfor %}
 </table>
-
-<h2>
-Current Orders
-</h2>
-<table class="styled-table">
-    <tr>
-        <th>Ticker</th>
-        <th>Quantity</th>
-        <th>Price per Stock</th>
-        <th>Date</th>
-        <th>Client</th>
-        <th>Exchange</th>
-        <th>Type</th>
-    </tr>
-{% for j in currorder %}
-    <tr>
-        <td>{{ j.sid.ticker }}</td>
-        <td>{{ j.completed_quantity }} / {{ j.quantity }}</td>
-        <td>{{ j.price }}</td>
-        <td>{{ j.creation_time }}</td>
-        <td>{{ j.folio_id.clid.clid.name }}</td>
-        <td>{{ j.eid.name }}</td>
-        <td>{{ j.order_type }}</td>
-    </tr>
-{% endfor %}
-</table>	
 		
 <div class="container">    
     <form method="POST">

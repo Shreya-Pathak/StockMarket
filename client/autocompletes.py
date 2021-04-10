@@ -24,6 +24,14 @@ class StockAutocomplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated:
             return models.Stock.objects.none()
+        wish = self.forwarded.get('for_wishlist', None)
+        if wish is not None:
+            assert wish == 'for_wishlist'
+            return models.Stock.objects.all()
+        folio = self.forwarded.get('for_portfolio', None)
+        if folio is not None:
+            assert folio == 'for_portfolio'
+            return models.Stock.objects.all()
         order_type = self.forwarded.get('order_type', False)
         quantity = is_int(self.forwarded.get('quantity', 0))
         folio_id = is_int(self.forwarded.get('portfolio', 0))

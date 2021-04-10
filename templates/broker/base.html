@@ -17,6 +17,9 @@
     {% block nav_past_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_past_order' %}">Past Orders</a>{% endblock %}
   </li>
   <li class="nav-item">
+    {% block nav_approve_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_approve_order' %}">Approve Orders</a>{% endblock %}
+  </li>
+  <li class="nav-item">
     {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>{% endblock %}
   </li>
   <li class="nav-item">

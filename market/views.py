@@ -22,6 +22,13 @@ import matplotlib.pyplot as plt
 
 
 # Create your views here.
+def check_type(v, t=int):
+    try:
+        return t(v)
+    except:
+        return None
+
+
 def render(request, html_file, context={}):
 	indices = list(models.Indices.objects.all())
 	random.shuffle(indices)

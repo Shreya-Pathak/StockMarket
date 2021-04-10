@@ -9,5 +9,79 @@ Cancel Order
 {% endblock %}
 
 {% block content %}
-<h1>CANCEL ORDER</h1>
+<style>
+.styled-table {
+    min-width: 700px;
+}
+.btn {
+    position: relative;
+    top:20px !important;
+}
+</style>
+<h2>
+Pending Orders
+</h2>
+<table class="styled-table">
+    <tr>
+        <th>Ticker</th>
+        <th>Quantity</th>
+        <th>Price Per Stock</th>
+        <th>Date</th>
+        <th>Portfolio</th>
+        <th>Broker</th>
+        <th>Exchange</th>
+        <th>Type</th>
+        <th></th>
+    </tr>
+{% for j in pendingorders %}
+    <tr>
+        <td>{{ j.sid.ticker }}</td>
+        <td>{{ j.quantity }}</td>
+        <td>{{ j.price }}</td>
+        <td>{{ j.creation_time }}</td>
+        <td>{{ j.folio_id.pname }}</td>
+        <td>{{ j.bid.bid.name }}</td>
+        <td>{{ j.eid.name }}</td>
+        <td>{{ j.order_type }}</td>
+        <td><a href="{% url 'client_cancel_order' %}?order={{ j.order_id }}&type=pending">Cancel</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<h2>
+Current Orders
+</h2>
+<table class="styled-table">
+    <tr>
+        <th>Ticker</th>
+        <th>Quantity</th>
+        <th>Price per Stock</th>
+        <th>Date</th>
+        <th>Portfolio</th>
+        <th>Broker</th>
+        <th>Exchange</th>
+        <th>Type</th>
+        <th></th>
+    </tr>
+{% for j in currorder %}
+    <tr>
+        <td>{{ j.sid.ticker }}</td>
+        <td>{{ j.completed_quantity }} / {{ j.quantity }}</td>
+        <td>{{ j.price }}</td>
+        <td>{{ j.creation_time }}</td>
+        <td>{{ j.folio_id.pname }}</td>
+        <td>{{ j.bid.bid.name }}</td>
+        <td>{{ j.eid.name }}</td>
+        <td>{{ j.order_type }}</td>
+        <td><a href="{% url 'client_cancel_order' %}?order={{ j.order_id }}&type=current">Cancel</a></td>
+    </tr>
+{% endfor %}
+</table>	
+		
+<div class="container">    
+    <form method="POST">
+        {% csrf_token %}
+        {% crispy form %}
+    </form>
+</div>		
 {% endblock %} 
