@@ -11,32 +11,7 @@ Stock Listings
 {% block content %}
 <style>
 .styled-table {
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.9em;
-    font-family: sans-serif;
-    min-width: 700px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-.styled-table thead tr {
-    background-color: #009879;
-    color: #ffffff;
-    text-align: left;
-}
-.styled-table th,
-.styled-table td {
-    padding: 12px 15px;
-}
-.styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-
-.styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
-}
-
-.styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #009879;
+    min-width: 700px !important;
 }
 </style>
 <div align="center">
@@ -62,7 +37,7 @@ Stock Listings
                 </button>
             </td>
             <td>
-                <form name="form_{{ r.last_price_id }}" method="post" action="{% url 'client_place_order' %}" class="inline">
+                <form name="form_{{ r.listed_id }}" method="post" action="{% url 'client_place_order' %}" class="inline">
                   {% csrf_token %}
                   <input type="hidden" name="order_type" value="Buy">
                   <input type="hidden" name="quantity" value="0">
@@ -72,7 +47,7 @@ Stock Listings
                   <input type="hidden" name="broker" value="0">
                   <input type="hidden" name="price" value="{{ r.last_price }}">
                   <button class="btn btn-default" type="button">
-                    <a href="javascript:;" name="submit" value="Place Order" onclick="document.form_{{ r.last_price_id }}.submit(); return false;">Buy</a>
+                    <a href="javascript:;" name="submit" value="Place Order" onclick="document.form_{{ r.listed_id }}.submit(); return false;">Buy</a>
                   </button>
                 </form>
             </td>

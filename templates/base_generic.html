@@ -1,12 +1,13 @@
+{% block complete_html %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         {% load static %}
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"></link>
         <link href="{% static 'fontawesome/css/all.css' %}" rel="stylesheet">
-        <link href="{% static 'css/styles.css' %}" rel="stylesheet"></link>
-        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-        <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+        <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet"></link>
+        <link href="{% static 'styles.css' %}" rel="stylesheet"></link>
+        <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
         <title>
             {% block title %}
             Stock Market
@@ -18,38 +19,41 @@
     </head>
     {% include 'message.html' %}
     <body>
-        {% block nav %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-          <div class="container-fluid">
-            <a class="navbar-brand" href="#">NavBar</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav">
-                <li class="nav-item">
-                  {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'home' %}">Home</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_login %}<a class="nav-link" aria-current="page" href="{% url 'login' %}">Login</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_signup %}<a class="nav-link" aria-current="page" href="{% url 'signup' %}">SignUp</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_analysis %}<a class="nav-link" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>{% endblock %}
-                </li>
-              </ul>
+        <div class="area" >
+          <nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background-color: rgba(232,232,232,0.8);">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="#">NavBar</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              {% block nav %}
+              <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                  <li class="nav-item">
+                    {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'home' %}">Home</a>{% endblock %}
+                  </li>
+                  <li class="nav-item">
+                    {% block nav_login %}<a class="nav-link" aria-current="page" href="{% url 'login' %}">Login</a>{% endblock %}
+                  </li>
+                  <li class="nav-item">
+                    {% block nav_signup %}<a class="nav-link" aria-current="page" href="{% url 'signup' %}">SignUp</a>{% endblock %}
+                  </li>
+                  <li class="nav-item">
+                    {% block nav_analysis %}<a class="nav-link" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>{% endblock %}
+                  </li>
+                </ul>
+              </div>
+              {% endblock %}
             </div>
+          </nav>
+          <div align="center" style="padding-top: 4rem">
+              {% block content %}
+              {% endblock %}
           </div>
-        </nav>
-        {% endblock %}
-        <div align="center" style="padding-top: 4rem">
-            {% block content %}
-            {% endblock %}
-        </div>
-        <br><br><br>
-        {% include 'live_ticker.html' %}
+          <br><br><br>
+          {% include 'live_ticker.html' %}
+          <ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>
+        </div >
         {% if messages %}
             <script>
                 var alertList = document.querySelectorAll('.alert');
@@ -58,3 +62,4 @@
         {% endif %}
     </body>
 </html>
+{% endblock %}

@@ -8,37 +8,6 @@ Portfolios
 <a class="nav-link active" aria-current="page" href="{% url 'client_portfolio' %}">Portfolio</a>
 {% endblock %}
 {% block content %}
-<style>
-.styled-table {
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.9em;
-    font-family: sans-serif;
-    min-width: 30%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-.styled-table thead tr {
-    background-color: #009879;
-    color: #ffffff;
-    text-align: center;
-}
-.styled-table th, .styled-table td {
-    padding: 12px 15px;
-    text-align: center;
-}
-.styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-.styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
-}
-.styled-table tbody tr:last-of-type {
-    border-bottom: 0px solid #009879;
-}
-.with-margin {
-  margin-bottom: 2%;
-}
-</style>
 <br>
 {% for k,v in data.items %}
 <h2>{{ k }}</h2>

@@ -1,96 +1,49 @@
-{% if request.user.is_authenticated %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        {% load static %}
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"></link>
-        <link href="{% static 'fontawesome/css/all.css' %}" rel="stylesheet">
-        <link href="{% static 'css/styles.css' %}" rel="stylesheet"></link>
-        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-        <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
-        <title>
-            {% block title %}
-            Stock Market
-            {% endblock %}
-        </title>
-        <meta charset="utf-8">
-            <meta content="width=device-width, initial-scale=1" name="viewport"></meta>
-        </meta>
-    </head>
-    {% include 'message.html' %}
-    <body>
-        {% block nav %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-          <div class="container-fluid">
-            <a class="navbar-brand" href="#">NavBar</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav">
-                <li class="nav-item">
-                  {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'broker_home' %}">Home</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_past_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_past_order' %}">Past Orders</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_analysis %}<a class="nav-link" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_companies %}<a class="nav-link" aria-current="page" href="{% url 'broker_companies' %}">Companies</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_withdraw %}<a class="nav-link" aria-current="page" href="{% url 'broker_withdraw' %}">Withdraw</a>{% endblock %}
-                </li>
-                <li class="nav-item">
-                  {% block nav_add_funds %}<a class="nav-link" aria-current="page" href="{% url 'broker_add_funds' %}">Add Funds</a>{% endblock %}
-                </li>
-              </ul>
-            </div>
-            <div class="collapse navbar-collapse flex-grow-1 text-right" id="navbarNav">
-              <ul class="navbar-nav ms-auto flex-nowrap">
-                <li class="nav-item">
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.username }}</a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="{% url 'broker_home' %}">Broker</a></li>
-                        <li><a class="dropdown-item" href="{% url 'broker_logout' %}">Log out</a></li>
-                    </ul>
-                </div>
-            </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-        {% endblock %}
-        <div align="center" style="padding-top: 4rem">
-          {% block content %}
-          {% endblock %}
-        </div>
-        <br><br><br>
-        {% include 'live_ticker.html' %}
-        {% if messages %}
-            <script>
-                var alertList = document.querySelectorAll('.alert');
-                alertList.forEach(function (alert) { new bootstrap.Alert(alert); })
-            </script>
-        {% endif %}
-    </body>
-</html>
-{% else %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>
-            Forbidden
-        </title>
-    </head>
-    <body>
-      <h1 align="center">FORBIDDEN PAGE</h1>
-    </body>
-</html>
-{% endif %}
+{% extends 'base_generic.html' %}
+{% block complete_html %}
+  {% if request.user.is_authenticated %}
+    {{ block.super }}
+  {% else %}
+    {% include 'forbidden.html' %}
+  {% endif %}
+{% endblock %}
+
+{% block nav %}
+<div class="collapse navbar-collapse" id="navbarNav">
+<ul class="navbar-nav">
+  <li class="nav-item">
+    {% block nav_home %}<a class="nav-link" aria-current="page" href="{% url 'broker_home' %}"><i class="fas fa-home"></i> Home</a>{% endblock %}
+  </li>
+  <li class="nav-item">
+    {% block nav_past_orders %}<a class="nav-link" aria-current="page" href="{% url 'broker_past_order' %}">Past Orders</a>{% endblock %}
+  </li>
+  <li class="nav-item">
+    {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>{% endblock %}
+  </li>
+  <li class="nav-item">
+    {% block nav_analysis %}<a class="nav-link" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>{% endblock %}
+  </li>
+  <li class="nav-item">
+    {% block nav_companies %}<a class="nav-link" aria-current="page" href="{% url 'broker_companies' %}">Companies</a>{% endblock %}
+  </li>
+  <li class="nav-item">
+    {% block nav_withdraw %}<a class="nav-link" aria-current="page" href="{% url 'broker_withdraw' %}">Withdraw</a>{% endblock %}
+  </li>
+  <li class="nav-item">
+    {% block nav_add_funds %}<a class="nav-link" aria-current="page" href="{% url 'broker_add_funds' %}">Add Funds</a>{% endblock %}
+  </li>
+</ul>
+</div>
+<div class="collapse navbar-collapse flex-grow-1 text-right" id="navbarNav">
+<ul class="navbar-nav ms-auto flex-nowrap">
+  <li class="nav-item">
+  <div class="dropdown">
+      <a class="nav-link dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user-tie"></i> {{ request.user.username }}</a>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+          <li><a class="dropdown-item" href="{% url 'broker_home' %}">Broker</a></li>
+          <li><a class="dropdown-item" href="{% url 'broker_logout' %}">Log out</a></li>
+      </ul>
+  </div>
+  </li>
+</ul>
+</div>
+{% endblock %}
