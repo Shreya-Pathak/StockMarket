@@ -5,9 +5,9 @@
 Companies
 {% endblock %}
 {% block nav_companies %}
-<a class="nav-link active" aria-current="page" href="{% url 'client_companies' %}">Companies</a>
+<a class="nav-link active" aria-current="page" href="{% url 'companies' 0 1 %}">Companies</a>
 {% endblock %}
 
 {% block content %}
-<h1>COMPANIES</h1>
+{% include 'includes/companies.html' %}
 {% endblock %} 

@@ -54,7 +54,7 @@ class PortfolioForm(forms.Form):
         self.helper.label_class = 'col-lg-4'
         self.fields['pname'].label = 'Portfolio Name'
         self.helper.field_class = 'col-lg-8'
-        self.helper.layout = Layout(Div('pname', css_class='with-margin'), Div('stock', css_class='with-margin'), Submit('submit', 'Add Portfolio', css_class='btn btn-primary'))
+        self.helper.layout = Layout(Div('pname', css_class='with-margin'), Div('stock', css_class='with-margin'), Submit('submit', 'Update Portfolio', css_class='btn btn-primary'))
         data = kwargs.pop('data', None)
         if data is not None:
             sid = check_type(data['stock'], int)

@@ -5,9 +5,9 @@
 Withdraw
 {% endblock %}
 {% block nav_withdraw %}
-<a class="nav-link active" aria-current="page" href="{% url 'broker_withdraw' %}">Withdraw</a>
+<a class="nav-link active" aria-current="page" href="{% url 'withdraw' %}">Withdraw</a>
 {% endblock %}
 
 {% block content %}
-<h1>WITHDRAW</h1>
+{% include 'includes/withdraw.html' %}
 {% endblock %} 

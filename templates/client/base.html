@@ -26,7 +26,7 @@
     {% block nav_analysis %}<a class="nav-link" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>{% endblock %}
   </li>
   <li class="nav-item">
-    {% block nav_companies %}<a class="nav-link" aria-current="page" href="{% url 'client_companies' %}">Companies</a>{% endblock %}
+    {% block nav_companies %}<a class="nav-link" aria-current="page" href="{% url 'companies' 0 1 %}">Companies</a>{% endblock %}
   </li>
   <li class="nav-item">
     {% block nav_place_order %}<a class="nav-link" aria-current="page" href="{% url 'client_place_order' %}">Place Order</a>{% endblock %}
@@ -38,10 +38,10 @@
     {% block nav_past_order %}<a class="nav-link" aria-current="page" href="{% url 'client_past_order' %}">Past Orders</a>{% endblock %}
   </li>
   <li class="nav-item">
-    {% block nav_withdraw %}<a class="nav-link" aria-current="page" href="{% url 'client_withdraw' %}">Withdraw</a>{% endblock %}
+    {% block nav_withdraw %}<a class="nav-link" aria-current="page" href="{% url 'withdraw' %}">Withdraw</a>{% endblock %}
   </li>
   <li class="nav-item">
-    {% block nav_add_funds %}<a class="nav-link" aria-current="page" href="{% url 'client_add_funds' %}">Add Funds</a>{% endblock %}
+    {% block nav_add_funds %}<a class="nav-link" aria-current="page" href="{% url 'add_funds' %}">Add Funds</a>{% endblock %}
   </li>
 </ul>
 </div>

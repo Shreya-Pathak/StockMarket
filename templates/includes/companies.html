@@ -1,0 +1,94 @@
+{% if details %}
+<div id="logo"><img class="logo" src="{{ company.logo }}"></img></div>
+
+<h2>{{ company.name }}</h2>
+
+<span>{{ company.cid.ticker }}</span><br>
+
+<span>{{ company.cid.total_stocks }}</span><br>
+
+<span>{{ company.address }}</span><br>
+
+<span>{{ company.city }}</span><br>
+
+<span>{{ company.zipcode }}</span><br>
+
+<span>{{ company.country }}</span><br>
+
+<span>{{ company.phone }}</span><br>
+
+<span>{{ company.sector }}</span><br>
+
+<span>{{ company.summary }}</span><br>
+
+<a href="{{ company.website }}">Website</a><br>
+
+{% if company.employees > 0 %}
+<span>{{ company.employees }}</span><br>
+{% else %}
+<span>-</span><br>
+{% endif %}
+
+<span>{{ company.industry }}</span><br>
+{% else %}
+<style>
+.styled-table {
+  min-width: 700px !important;
+}
+</style>
+<div align="center">
+  <h2>Companies</h2>
+  <table class="styled-table">
+    <tr>
+    <th>Company</th>
+    <th>Ticker</th>
+    <th>Float Shares</th>
+    <th>Country</th>
+    <th>Sector</th>
+    </tr>
+    {% for company in data %}
+    <tr>
+    <td><a href="{% url 'companies' company.cid_id 1 %}">{{ company.name }}</a></td>
+    <td>{{ company.cid.ticker }}</td>
+    <td>{{ company.cid.total_stocks }}</td>
+    <td>{{ company.country }}</td>
+    <td>{{ company.sector }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="btn-group" role="group" aria-label="button-group">
+  {% if prev_exists %}
+    <button class="btn btn-primary" onclick="location.href='{% url 'companies' 0 prev %}{{ params }}';" name="previous">
+      Previous
+    </button>
+	{% endif %}
+    <button class="btn btn-primary" name="status">
+      {{ pagestr }}
+    </button>
+	{% if next_exists %}
+		<button class="btn btn-primary" onclick="location.href='{% url 'companies' 0 next %}{{ params }}';" name="next">
+	      Next
+	  </button>
+	{% endif %}
+	</div>
+	<br><br>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="container">
+      <div class="row">
+        {% for field in form  %}
+        <div class="col-sm-3">
+          <b>{{ field.label_tag }}</b> - {{ field }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <br>
+    <center>
+      <button class="btn btn-primary" name="cfilt" type="submit" value="Submit">
+        Refine
+      </button>
+    </center>
+  </form>
+</div>
+{% endif %}

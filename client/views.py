@@ -74,9 +74,10 @@ def portfolio_view(request):
 		else:
 			folio = holding.folio_id
 			holding.delete()
+			messages.success(request, 'Portfolio entry deleted.')
 			if not models.Holdings.objects.filter(folio_id=folio).exists():
 				folio.delete()
-			messages.success(request, 'Portfolio entry deleted.')
+				messages.success(request, 'Portfolio also deleted.')
 		return HttpResponseRedirect('portfolio')
 
 	if request.method == 'POST':
@@ -88,6 +89,7 @@ def portfolio_view(request):
 			if folio is None:
 				folio = models.Portfolio(pname=pname, clid=client)
 				folio.save()
+				messages.success(request, 'Portfolio created.')
 			if stock is not None:
 				holding = models.Holdings.objects.filter(folio_id=folio, sid=stock).first()
 				if holding is not None:
@@ -287,10 +289,6 @@ def past_order_view(request):
 	return render(request, 'client/past_order.html', context)
 
 
-def withdraw_view(request):
-	return render(request, 'client/withdraw.html', {})
-
-
 def wishlists_view(request):
 	if check_user(request):
 		return HttpResponseRedirect('/home')
@@ -306,9 +304,10 @@ def wishlists_view(request):
 		if stock_wish is not None:
 			wish = stock_wish.wish_id
 			stock_wish.delete()
+			messages.success(request, 'Wishlist entry deleted.')
 			if not models.StockWishlist.objects.filter(wish_id=wish).exists():
 				wish.delete()
-			messages.success(request, 'Wishlist entry deleted.')
+				messages.success(request, 'Wishlist also deleted.')
 		else:
 			messages.error(request, 'You can\'t delete this wishlist entry.')
 		return HttpResponseRedirect('wishlists')
@@ -322,6 +321,7 @@ def wishlists_view(request):
 			if wish is None:
 				wish = models.Wishlist(wname=wname, clid=client)
 				wish.save()
+				messages.success(request, 'Wishlist created.')
 			if stock is not None:
 				stock_wish = models.StockWishlist.objects.filter(wish_id=wish, sid=stock).first()
 				if stock_wish is not None:
@@ -342,9 +342,4 @@ def wishlists_view(request):
 	return render(request, 'client/wishlists.html', context)
 
 
-def add_funds_view(request):
-	return render(request, 'client/add_funds.html', {})
 
-
-def companies_view(request):
-	return render(request, 'client/companies.html', {})

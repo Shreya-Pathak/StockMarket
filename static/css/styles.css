@@ -65,3 +65,21 @@
   0% { transform: translate(100vw, 0); }
   100% { transform: translate(-100%, 0); }
 }
+#logo { 
+  height: 132px; 
+  width: 132px; 
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.logo {
+  max-height: 95%;
+  max-width: 95%;
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}

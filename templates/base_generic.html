@@ -18,7 +18,7 @@
             <meta content="width=device-width, initial-scale=1" name="viewport"></meta>
         </meta>
     </head>
-    {% include 'message.html' %}
+    {% include 'includes/message.html' %}
     <body>
         <div class="area" >
           <nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background-color: rgba(232,232,232,0.8);">
@@ -40,7 +40,13 @@
                     {% block nav_signup %}<a class="nav-link" aria-current="page" href="{% url 'signup' %}">SignUp</a>{% endblock %}
                   </li>
                   <li class="nav-item">
+                    {% block nav_stocklist %}<a class="nav-link" aria-current="page" href="{% url 'stocklist' 1 %}">Stock Listings</a>{% endblock %}
+                  </li>
+                  <li class="nav-item">
                     {% block nav_analysis %}<a class="nav-link" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>{% endblock %}
+                  </li>
+                  <li class="nav-item">
+                    {% block nav_companies %}<a class="nav-link" aria-current="page" href="{% url 'companies' 0 1 %}">Companies</a>{% endblock %}
                   </li>
                 </ul>
               </div>
@@ -52,15 +58,9 @@
               {% endblock %}
           </div>
           <br><br><br>
-          {% include 'live_ticker.html' %}
+          {% include 'includes/live_ticker.html' %}
           <ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>
         </div >
-        {% if messages %}
-            <script>
-                var alertList = document.querySelectorAll('.alert');
-                alertList.forEach(function (alert) { new bootstrap.Alert(alert); })
-            </script>
-        {% endif %}
     </body>
 </html>
 {% endblock %}

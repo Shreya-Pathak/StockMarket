@@ -5,9 +5,9 @@
 Add Funds
 {% endblock %}
 {% block nav_add_funds %}
-<a class="nav-link active" aria-current="page" href="{% url 'client_add_funds' %}">Add Funds</a>
+<a class="nav-link active" aria-current="page" href="{% url 'add_funds' %}">Add Funds</a>
 {% endblock %}
 
 {% block content %}
-<h1>ADD FUNDS</h1>
+{% include 'includes/add_funds.html' %}
 {% endblock %} 

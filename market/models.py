@@ -3,6 +3,7 @@ from django.db import DEFAULT_DB_ALIAS
 from django.db.transaction import Atomic, get_connection
 from timescale.db.models.fields import TimescaleDateTimeField
 from timescale.db.models.managers import TimescaleManager
+from datetime import timedelta
 
 
 class Stock(models.Model):
@@ -73,7 +74,8 @@ class Broker(models.Model):
     orders_approved = models.IntegerField(blank=False, null=False, default=0)
 
     def __str__(self):
-        return f'{self.bid.name} - {self.commission}%'
+        latency = str(timedelta(seconds=self.latency))
+        return f'{self.bid.name} - {self.commission}% - {latency}'
 
 
 class Portfolio(models.Model):

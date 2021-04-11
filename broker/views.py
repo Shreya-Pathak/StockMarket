@@ -152,14 +152,3 @@ def approve_order_view(request):
     context = {'pendingorders': pendingorder, 'form': formog}
     return render(request, 'broker/approve_orders.html', context)
 
-
-def withdraw_view(request):
-    return render(request, 'broker/withdraw.html', {})
-
-
-def add_funds_view(request):
-    return render(request, 'broker/add_funds.html', {})
-
-
-def companies_view(request):
-    return render(request, 'broker/companies.html', {})

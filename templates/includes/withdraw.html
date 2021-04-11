@@ -1,0 +1,27 @@
+<br>
+<h2>Your Accounts</h2>
+<table class="styled-table">
+    <tr>
+        <th>Account Number</th>
+        <th>Bank</th>
+        <th>Balance</th>
+        <th>Withdraw</th>
+    </tr>
+	{% for acct in accts %}
+    <tr>
+        <td>{{ acct.account_number }}</td>
+        <td>{{ acct.bank_name }}</td>
+        <td>{{ acct.balance }}</td>
+        <td>
+	      <form method="POST" class="inline">
+	        {% csrf_token %}
+	        <input type="visible" name="funds" value="">
+	        <input type="hidden" name="acct" value="{{ acct.account_number }}">
+	        <button type="submit" name="submit" value="withdraw" class="btn btn-primary">
+	        	Withdraw
+	        </button>
+	      </form>
+	    </td>
+    </tr>
+    {% endfor %}
+</table>
