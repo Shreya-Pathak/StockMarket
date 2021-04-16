@@ -51,7 +51,11 @@ def home_view(request):
 	if not request.user.is_authenticated:
 		messages.error(request, 'Please login first.')
 		return HttpResponseRedirect('/login')
-	return render(request, 'client/home.html')
+	client = models.Client.objects.filter(username=request.user.username).first()
+	assert client is not None
+	context = {'client': client}
+	return render(request, 'client/home.html', context)
+
 
 
 def portfolio_view(request):
