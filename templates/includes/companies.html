@@ -1,35 +1,70 @@
 {% if details %}
-<div id="logo"><img class="logo" src="{{ company.logo }}"></img></div>
+<h2>{{company.name}}</h2>
+<h5><span>{{ company.industry }}</span></h5>
+<br>
+<style type="text/css">
+  .column1 {
+  
+  width: 10%;
+  padding: 5px;
+  margin-left: 37.5%;
+  vertical-align: center;
 
-<h2>{{ company.name }}</h2>
+}
+  .column2 {
+  
+  width: 15%;
+  padding: 5px;
+  margin-right: 37.5%;
 
-<span>{{ company.cid.ticker }}</span><br>
+}
+/* Clear floats after image containers */
+.row::after {
+  content: "";
+  clear: both;
 
-<span>{{ company.cid.total_stocks }}</span><br>
+  display: table;
+}
+</style>
+ <div class="row"  >
+  <div class="column1" >
+    <img src="{{ company.logo }}" alt="Snow" style="width:70%">
+  </div>
+  <div class="column2" >
+    <span>Ticker: {{ company.cid.ticker }}</span><br>
 
-<span>{{ company.address }}</span><br>
+      <span>Free Float shares: {{ company.cid.total_stocks }}</span><br>
 
-<span>{{ company.city }}</span><br>
+     
 
-<span>{{ company.zipcode }}</span><br>
+      <span>Country: {{ company.country }}</span><br>
 
-<span>{{ company.country }}</span><br>
 
-<span>{{ company.phone }}</span><br>
+      <span>Sector: {{ company.sector }}</span><br>
+  </div>
+</div> 
 
-<span>{{ company.sector }}</span><br>
-
-<span>{{ company.summary }}</span><br>
-
+<br>
+<h4>About</h4>
+<div style="width: 60%">
+<span><p align="justify">{{ company.summary }}</p></span>
+<h4>Address</h4>
+ <span>{{ company.address }}</span><br>
+  <span>{{ company.city }}</span><br>
+  <span>{{ company.zipcode }}</span><br>
+<h4> Reach out</h4>
+  <span>{{ company.phone }}</span><br>
 <a href="{{ company.website }}">Website</a><br>
 
 {% if company.employees > 0 %}
+<h4>Number of employees</h4>
 <span>{{ company.employees }}</span><br>
 {% else %}
-<span>-</span><br>
+
 {% endif %}
 
-<span>{{ company.industry }}</span><br>
+
+</div>
 {% else %}
 <style>
 .styled-table {
