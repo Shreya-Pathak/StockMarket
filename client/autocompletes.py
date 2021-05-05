@@ -27,11 +27,12 @@ class StockAutocomplete(autocomplete.Select2QuerySetView):
         wish = self.forwarded.get('for_wishlist', None)
         if wish is not None:
             assert wish == 'for_wishlist'
-            return models.Stock.objects.all()
+            # print('llllll')
+            return models.Stock.objects.all().filter(ticker__icontains=self.q).order_by('ticker')
         folio = self.forwarded.get('for_portfolio', None)
         if folio is not None:
             assert folio == 'for_portfolio'
-            return models.Stock.objects.all()
+            return models.Stock.objects.all().filter(ticker__icontains=self.q).order_by('ticker')
         order_type = self.forwarded.get('order_type', False)
         quantity = is_int(self.forwarded.get('quantity', 0))
         folio_id = is_int(self.forwarded.get('portfolio', 0))

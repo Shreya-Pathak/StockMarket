@@ -69,6 +69,15 @@ def custom_query(query, format_vars=None):
         rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
     return rows
 
+def stocklist_initial(val):
+    if val=='change':
+        return 'Change'
+    if val=='eid__name':
+        return 'Exchange'
+    if val=='last_price':
+        return 'Last Price'
+    else:
+        return 'Ticker'
 
 def stocklist_view(request, page_num=1):
     if request.method == 'POST':
@@ -86,15 +95,17 @@ def stocklist_view(request, page_num=1):
             else:
                 order = 'sid__ticker'
             paramstr = f'?exchange={exchange}&ticker={ticker}&order={order}'
-            return redirect(f'/market/stocklist/1/{paramstr}')
+            return redirect(f'/market/stocklist/1{paramstr}')
     exchange = request.GET.get('exchange', '')
     ticker = request.GET.get('ticker', '')
     order = request.GET.get('order', 'sid__ticker')
     paramstr = f'?exchange={exchange}&ticker={ticker}&order={order}'
 
     form = StockSorterForm()
-    form['sortfield'].initial = order if order != 'sid__ticker' else 'Ticker'
-
+    # print(order)
+    form['sortfield'].initial = stocklist_initial(order) if order != 'sid__ticker' else 'Ticker'
+    form['ticker'].initial=ticker
+    form['exchange'].initial=exchange
     StockLt = models.ListedAt.objects.filter(sid__ticker__icontains=ticker, eid__name__icontains=exchange)
     StockLt = StockLt.select_related('sid', 'eid').order_by(order).all()
     pg = Paginator(StockLt, 8)
@@ -116,6 +127,13 @@ def stocklist_view(request, page_num=1):
         return render(request, 'forbidden.html', {})
     return render(request, f'{user}stocklist.html', context)
 
+def company_initial(val):
+    if val=='name':
+        return 'Name'
+    if val=='country':
+        return 'Country'
+    else:
+        return 'Ticker'
 
 def companies_view(request, cid=0, page_num=1):
     company = models.Company.objects.select_related('cid').filter(pk=cid).first()
@@ -144,10 +162,12 @@ def companies_view(request, cid=0, page_num=1):
         sector = request.GET.get('sector', '')
         order = request.GET.get('order', 'cid__ticker')
         paramstr = f'?name={name}&country={country}&sector={sector}&order={order}'
-
+        # print(order)
         form = CompanySorterForm()
-        form['sortfield'].initial = order if order != 'cid__ticker' else 'Ticker'
-
+        form['sortfield'].initial = company_initial(order)  if order != 'cid__ticker' else 'Ticker'
+        form['name'].initial=name
+        form['country'].initial=country
+        form['sector'].initial=sector
         companies = models.Company.objects.filter(name__icontains=name, country__icontains=country, sector__icontains=sector)
         companies = companies.select_related('cid').order_by(order).all()
         pg = Paginator(companies, 8)
