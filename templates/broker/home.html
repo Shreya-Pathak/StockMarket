@@ -9,5 +9,51 @@ Home
 {% endblock %}
 
 {% block content %}
-<h1>HomePage</h1>
+<style>
+table {
+    /*min-width: 700px;*/
+	background-color: transparent;
+    margin-left:auto;
+    margin-right:auto;
+}
+tr {
+	background-color: transparent;
+}
+td {
+	width: 500px;
+	height: 100px;
+	font-size: xx-large;
+	text-align: center;
+}
+</style>
+
+<h1>Details<h1>
+<br></br>
+<table>
+    <tr>
+        <td>Name</td>
+        <td>{{ broker.bid.name }}</td>
+    </tr>
+    <tr>
+        <td>Address</td>
+        <td>{{ broker.bid.address }}</td>
+    </tr>
+    <tr>
+        <td>Telephone</td>
+        <td>{{ broker.bid.telephone }}</td>
+    </tr>
+    <tr>
+        <td>Balance</td>
+        <td>{{ broker.balance }}</td>
+    </tr>
+    <tr>
+        <td>Latency</td>
+        <td>{{ broker.latency }}</td>
+    </tr>
+    <tr>
+        <td>Commission</td>
+        <td>{{ broker.commission }}</td>
+    </tr>
+</table>
+
 {% endblock %} 

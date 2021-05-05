@@ -49,7 +49,10 @@ def home_view(request):
     if not request.user.is_authenticated:
         messages.error(request, 'Please login first.')
         return HttpResponseRedirect('/login')
-    return render(request, 'broker/home.html')
+    broker = models.Broker.objects.filter(username=request.user.username).first()
+    assert broker is not None
+    context = {'broker': broker}
+    return render(request, 'broker/home.html', context)
 
 
 def past_order_view(request):
