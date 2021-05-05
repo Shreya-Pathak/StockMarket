@@ -45,26 +45,28 @@
 </div> 
 
 <br>
-<h4>About</h4>
-<div style="width: 60%">
-<span><p align="justify">{{ company.summary }}</p></span>
-<h4>Address</h4>
- <span>{{ company.address }}</span><br>
+<table class="styled-table" style="width: 50%">
+  <tr><th>About</th></tr>
+  <tr><td><span><p align="justify">{{ company.summary }}</p></span></td></tr>
+
+  <tr><th>Address</th></tr>
+  <tr><td><center><span>{{ company.address }}</span><br>
   <span>{{ company.city }}</span><br>
-  <span>{{ company.zipcode }}</span><br>
-<h4> Reach out</h4>
-  <span>{{ company.phone }}</span><br>
-<a href="{{ company.website }}">Website</a><br>
+  <span>{{ company.zipcode }}</span></cemter></td></tr>
+  <tr><th>Reach out</th></tr>
+  <tr><td><span><center>{{ company.phone }}</center></span></td></tr>
+  <tr><th>Website</th></tr>
+  <tr><td><span><center><a href="{{ company.website }}">Website</a></center></span></td></tr>
+  {% if company.employees > 0 %}
+  <tr><th>Number of employees</th></tr>
+<tr><td><span>{{ company.employees }}</span></td></tr>
+{% else %}{% endif %}
+  </table>
 
-{% if company.employees > 0 %}
-<h4>Number of employees</h4>
-<span>{{ company.employees }}</span><br>
-{% else %}
-
-{% endif %}
 
 
-</div>
+
+
 {% else %}
 <style>
 .styled-table {

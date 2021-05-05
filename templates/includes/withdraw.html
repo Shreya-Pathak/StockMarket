@@ -5,7 +5,7 @@
         <th>Account Number</th>
         <th>Bank</th>
         <th>Balance</th>
-        <th>Withdraw</th>
+        <th>Transfer to Account</th>
     </tr>
 	{% for acct in accts %}
     <tr>
@@ -18,7 +18,7 @@
 	        <input type="visible" name="funds" value="">
 	        <input type="hidden" name="acct" value="{{ acct.account_number }}">
 	        <button type="submit" name="submit" value="withdraw" class="btn btn-primary">
-	        	Withdraw
+	        	Transfer
 	        </button>
 	      </form>
 	    </td>
