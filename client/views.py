@@ -301,7 +301,7 @@ def wishlists_view(request):
 		return HttpResponseRedirect('/login')
 	client = models.Client.objects.filter(username=request.user.username).first()
 	assert client is not None
-
+	msg=''
 	stock_wish_id = check_type(request.GET.get('id', None), int)
 	if stock_wish_id is not None:
 		stock_wish = models.StockWishlist.objects.select_related('wish_id').filter(pk=stock_wish_id, wish_id__clid=client).first()
@@ -329,10 +329,14 @@ def wishlists_view(request):
 			if stock is not None:
 				stock_wish = models.StockWishlist.objects.filter(wish_id=wish, sid=stock).first()
 				if stock_wish is not None:
+					print('kkkkk')
 					messages.error(request, 'Stock is already present in the given wishlist.')
-					return HttpResponseRedirect('wishlists')
+					resp=HttpResponseRedirect('wishlists')
+					resp.set_cookie(key='msg',value='Stock is already present in the given wishlist.')
+					return resp
 				stock_wish = models.StockWishlist(wish_id=wish, sid=stock)
 				stock_wish.save()
+				msg='Stock added to wishlist'
 				messages.success(request, 'Stock added to wishlist.')
 	data = {}
 	for wish in models.Wishlist.objects.all():
@@ -343,7 +347,9 @@ def wishlists_view(request):
 		data[wname].append((stock_wish, stock_wish.sid))
 	form = forms.WishlistForm()
 	context = {'data': data, 'form': form}
-	return render(request, 'client/wishlists.html', context)
+	resp= render(request, 'client/wishlists.html', context)
+	resp.set_cookie(key='msg',value=msg if msg!='' else request.COOKIES.get('msg',''))
+	return resp
 
 
 
