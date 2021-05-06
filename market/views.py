@@ -228,10 +228,11 @@ def add_funds_view(request):
                 elif acct.balance < funds:
                     messages.error(request, "Insufficient Funds in your bank account.")
                 else:
-                    acct.balance -= funds
-                    user_user.balance += funds
-                    acct.save()
-                    user_user.save()
+                    with transaction.atomic():    
+                        acct.balance -= funds
+                        user_user.balance += funds
+                        acct.save()
+                        user_user.save()
                     messages.success(request, "Funds added to your wallet.")
         else:
             form = AddAcctForm(request.POST) 
@@ -273,10 +274,11 @@ def withdraw_view(request):
                 elif user_user.balance < funds:
                     messages.error(request, "Insufficient Funds in your wallet.")
                 else:
-                    user_user.balance -= funds
-                    acct.balance += funds
-                    acct.save()
-                    user_user.save()
+                    with transaction.atomic():    
+                        user_user.balance -= funds
+                        acct.balance += funds
+                        acct.save()
+                        user_user.save()
                     messages.success(request, "Funds added to your bank account.")
     accts = models.BankAccount.objects.filter(pid=user)
     return render(request, f'{user_type}withdraw.html', {'accts':accts})
