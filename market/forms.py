@@ -4,6 +4,20 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Reset, Fieldset, Div
+from . import models
+from django.forms import ModelChoiceField
+
+class MyModelChoiceField(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "%s" % obj.ticker
+
+class MyModelChoiceField1(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "%s" % obj.name
+
+class MyModelChoiceField_ind(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "%s" % obj.index_name
 
 numeric = RegexValidator(r'^[0-9]+$', 'Only digit characters.')
 decimals = RegexValidator(r'^\d+[.,]?\d*$|^\d*[.,]?\d+$', 'Only decimal numbers.')
@@ -35,3 +49,11 @@ class AddAcctForm(forms.Form):
         self.helper.label_class = 'col-lg-4'
         self.helper.field_class = 'col-lg-8'
         self.helper.layout = Layout(Div('acct_no', css_class='with-margin'), Div('name', css_class='with-margin'), Div('balance', css_class='with-margin'), Submit('submit', 'Add Account', css_class='btn btn-primary'))
+
+class corrForm(forms.Form):
+    corrs = MyModelChoiceField(label='Stock', queryset=models.Stock.objects.all().order_by('ticker'))
+    corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))
+
+class corrForm_ind(forms.Form):
+    corrs = MyModelChoiceField_ind(label='Index', queryset=models.Indices.objects.all().order_by('index_name'))
+    # corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))

@@ -1,0 +1,13 @@
+{% extends 'client/base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title %}
+Analysis
+{% endblock %}
+{% block nav_analysis %}
+<a class="nav-link active" aria-current="page" href="{% url 'analysis' 0 0 %}">Analysis</a>
+{% endblock %}
+
+{% block content %}
+{% include 'includes/analysis_ind.html' %}
+{% endblock %} 

@@ -3,13 +3,13 @@
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   {% for idx in indices %}
     {% if idx.change < 0 %}
-    <span class="border badge bg-light text-dark" style="font-size:1rem;">
+    <a href="{% url 'analysis_ind' idx.iid %}"><span class="border badge bg-light text-dark" style="font-size:1rem;">
       <u>{{ idx.index_name }}</u> <i class="fas fa-arrow-right"></i> ${{ idx.last_price }} <i class="far fa-arrow-alt-circle-down" style="color:red"></i> <span  style="color:red">{{ idx.change }}%</span>
-    </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% else %}
-    <span class="border badge bg-light text-dark" style="font-size:1rem;">
+    <a href="{% url 'analysis_ind' idx.iid %}"><span class="border badge bg-light text-dark" style="font-size:1rem;">
       <u>{{ idx.index_name }}</u> <i class="fas fa-arrow-right"></i> ${{ idx.last_price }}  <i class="far fa-arrow-alt-circle-up" style="color:green"></i> <span  style="color:green">{{ idx.change }}%</span>
-    </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
   {% endfor %}
 </p></div>

@@ -42,7 +42,7 @@
 <style type="text/css">
 .container {
   width: 100%;
-  height: 400px;
+  height: 300px;
 }
 
 .one {
@@ -102,7 +102,7 @@ function ma10()
     document.getElementById('theImage').innerHTML='{{ ma1|safe }}';
     }
 </script>
-<h2> Analysis of {{st}} at {{ex}}</h2>
+<h2> Analysis of {{st}}</h2>
 <center>Expected Return (mean): {{mean}}
 <br> Risk (standard deviation): {{risk}}</center>
 {{data|safe}}{{dr|safe}}
@@ -131,6 +131,7 @@ Correlation = {{corrv}}
 <div class="two">
   {{cimage|safe}}
 </div>
+<br>
 <center>{{pred|safe}}</center>
 <br>
 <br>

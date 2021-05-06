@@ -11,10 +11,15 @@ from market.forms import *
 from io import BytesIO, StringIO
 import base64, urllib
 import numpy as np
+from time import time
 from django.core.serializers.json import DjangoJSONEncoder
 from . import models
 import random
 import requests
+import statistics as st
+import datetime
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import style
@@ -289,6 +294,9 @@ def get_svg(fig):
 
 
 def analysis_view(request, sid=0, eid=0):
+    user = get_user_type(request)
+    if user == 'admin/':
+        return render(request, 'forbidden.html', {})
     if sid <= 0:
         stock = models.Stock.objects.all().first()
         sid = stock.sid
@@ -299,18 +307,301 @@ def analysis_view(request, sid=0, eid=0):
         eid = exchange.eid
     else:
         exchange = models.Exchange.objects.get(eid=eid)
+
+    print(sid, eid)
     ph = custom_query("""
         SELECT price, creation_time FROM market_StockPricehistory as ph 
         WHERE ph.eid=%s and ph.sid=%s ORDER BY creation_time;""", [eid, sid])
-    price = [d['price'] for d in ph]
+
+    cp = custom_query("""
+        SELECT date, price from closing_price where eid=%s and sid=%s;""", [eid, sid])
+
+    ma = custom_query("""
+        SELECT time_bucket('3 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s group by date1 order by date1;""", [eid, sid])#moving avg
+
+    ma2 = custom_query("""
+        SELECT time_bucket('5 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s group by date1 order by date1;""", [eid, sid])#moving avg
+
+    dr = custom_query("""
+        SELECT date, dr from daily_return where eid=%s and sid=%s;""", [eid, sid])
+    # dr = custom_query("""
+    #     SELECT date, ((price/lag(price, 1) over (partition by (sid, eid) order by date))-1) dr from closing_price where eid=%s and sid=%s;""", [eid, sid])#daily return
+    # dict_ph = [{'x': d['creation_time'], 'y': d['price']} for d in ph]
+    
+    price = [float(d['price']) for d in ph]
     tsz = [d['creation_time'] for d in ph]
     dates = matplotlib.dates.date2num(tsz)
-    fig = plt.figure(figsize=(16, 8))
+    fig = plt.figure(figsize=(6, 4))
     plt.plot_date(dates, price, linestyle='solid', marker='None')
     plt.title(f'{stock.ticker} Price at {exchange.name} Exchange')
     plt.ylabel('Price')
     plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    buf = StringIO()
+    fig.savefig(buf, bbox_inches='tight', format='svg', transparent=True)
+    buf.seek(0)
+    plt.close()
+
+    price1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+    tsz = [d['date'] for d in dr]
+    dates = matplotlib.dates.date2num(tsz)
+    fig4 = plt.figure(figsize=(6, 4))
+    plt.plot_date(dates, price1, linestyle='solid', marker='None')
+    plt.title(f'{stock.ticker} Daily Return (in %) at {exchange.name} Exchange')
+    plt.ylabel('Daily Return')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    buf4 = StringIO()
+    fig4.savefig(buf4, bbox_inches='tight', format='svg', transparent=True)
+    buf4.seek(0)
+    plt.close()
+
+    mean = 0 if len(price1)==0 else "{0:0.3f}".format(st.mean(price1))
+    std = 0 if len(price1)<=1 else "{0:0.3f}".format(st.stdev(price1))
+
+    price_ = [float(d['price']) for d in cp]
+    tsz_ = [d['date'] for d in cp]
+    dates_ = matplotlib.dates.date2num(tsz_)
+    fig1 = plt.figure(figsize=(6, 4))
+    plt.plot_date(dates_, price_, linestyle='solid', marker='None')
+    price = [float(d['price']) for d in ma]
+    tsz = [d['date1'] for d in ma]
+    dates = matplotlib.dates.date2num(tsz)
+    # fig2 = plt.figure(figsize=(8, 4))
+    plt.plot_date(dates, price, linestyle='solid', marker='None')
+    price = [float(d['price']) for d in ma2]
+    tsz = [d['date1'] for d in ma2]
+    dates = matplotlib.dates.date2num(tsz)
+    # fig3 = plt.figure(figsize=(8, 4))
+    plt.plot_date(dates, price, linestyle='solid', marker='None')
+    plt.legend(['Closing Price', 'MA over 3 days', 'MA over 5 days'])
+    plt.title(f'{stock.ticker} Closing Price at {exchange.name} Exchange')
+    plt.ylabel('Closing Price')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    buf1 = StringIO()
+    fig1.savefig(buf1, bbox_inches='tight', format='svg', transparent=True)
+    buf1.seek(0)
+    plt.close()
+
+    t1 = time()
+    model = ARIMA(price_, order=(4, 0, 1))
+    model_fit = model.fit()
+    yhat = model_fit.predict(len(price_)+1, len(price_)+100, typ='levels')
+    t2 = time()
+    print(t2-t1)
+    print(len(yhat))
+    # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
+    # print(rms)
+    x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(100)]
+    figq = plt.figure(figsize=(15, 5))
+    # x = np.append(tsz_, x)
+    dates_1 = matplotlib.dates.date2num(x)
+    plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
+    plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
+    # plt.legend('Predicted Closing Price')
+    plt.title(f'Predicted {stock.ticker} Closing Price at {exchange.name} Exchange')
+    plt.ylabel('Closing Price')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    bufq = StringIO()
+    figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
+    bufq.seek(0)
+    plt.close()
+
+    form = corrForm()
+    if request.method == 'POST':
+        form = corrForm(request.POST)
+        if form.is_valid() and 'sfilt' in request.POST:
+            cors = form.cleaned_data['corrs']
+            core = form.cleaned_data['corre']
+            # print(cor.sid)
+            cr = custom_query("""select d1.dr as dr1,d2.dr as dr2 from (select date, dr from daily_return where eid=%s and sid=%s) as d1 join (select date, dr from daily_return where eid=%s and sid=%s) d2 using(date);""", [eid, sid, core.eid, cors.sid])
+            dr1 = [0 if d['dr1'] is None else float(d['dr1']) for d in cr]
+            dr2 = [0 if d['dr2'] is None else float(d['dr2']) for d in cr]
+            fig5 = plt.figure(figsize=(6, 4))
+            plt.scatter(dr1, dr2, c='red')
+            plt.title(f'Correlation btw {stock.ticker} at {exchange.name} and {cors.ticker} at {core.name}')
+            plt.ylabel(f'{cors.ticker} at {core.name}')
+            plt.xlabel(f'{stock.ticker} at {exchange.name}')
+            buf5 = StringIO()
+            fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+            buf5.seek(0)
+            plt.close()
+            corr_v = np.corrcoef(dr1,dr2)[0][1]
+            corr_v = "{0:0.2f}".format(corr_v)
+            return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+    else:
+        form = corrForm()
+        dr1 = []
+        dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+        dr2 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+        fig5 = plt.figure(figsize=(6, 4))
+        plt.scatter(dr1, dr2, c='red')
+        plt.title(f'Correlation btw {stock.ticker} at {exchange.name} and {stock.ticker} at {exchange.name}')
+        plt.ylabel(f'{stock.ticker} at {exchange.name}')
+        plt.xlabel(f'{stock.ticker} at {exchange.name}')
+        buf5 = StringIO()
+        fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+        buf5.seek(0)
+        plt.close()
+        corr_v = np.corrcoef(dr1,dr2)[0][1]
+        corr_v = "{0:0.2f}".format(corr_v)
+        return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+
+
+def analysis_view_index(request, iid=0):
     user = get_user_type(request)
     if user == 'admin/':
         return render(request, 'forbidden.html', {})
-    return render(request, f'{user}analysis.html', {'data': get_svg(fig)})
+    if iid <= 0:
+        index = models.Indices.objects.all().first()
+        iid = index.iid
+    else:
+        index = models.Indices.objects.get(iid=iid)
+
+    t1 = time()
+    
+    ph = custom_query("""
+        SELECT price, creation_time FROM market_IndexPricehistory as ph WHERE ph.iid=%s ORDER BY creation_time;""", [iid])
+
+    cp = custom_query("""
+        SELECT date, price from closing_price_ind where iid=%s order by date;""", [iid])
+
+    ma = custom_query("""
+        SELECT time_bucket('20 days', date) as date1, avg(price) as price from closing_price_ind where iid=%s group by date1 order by date1;""", [iid])#moving avg
+
+    ma2 = custom_query("""
+        SELECT time_bucket('40 days', date) as date1, avg(price) as price from closing_price_ind where iid=%s group by date1 order by date1;""", [iid])#moving avg
+
+    dr = custom_query("""
+        SELECT date, dr from daily_return_ind where iid=%s;""", [iid])
+    # dr = custom_query("""
+    #     SELECT date, ((price/lag(price, 1) over (partition by (sid, eid) order by date))-1) dr from closing_price where eid=%s and sid=%s;""", [eid, sid])#daily return
+    # dict_ph = [{'x': d['creation_time'], 'y': d['price']} for d in ph]
+    
+    t2 = time()
+    print(t2-t1)
+
+    price = [float(d['price']) for d in ph]
+    tsz = [d['creation_time'] for d in ph]
+    dates = matplotlib.dates.date2num(tsz)
+    fig = plt.figure(figsize=(6, 4))
+    plt.plot_date(dates, price, linestyle='solid', marker='None')
+    plt.title(f'{index.index_name} Price')
+    plt.ylabel('Price')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    buf = StringIO()
+    fig.savefig(buf, bbox_inches='tight', format='svg', transparent=True)
+    buf.seek(0)
+    plt.close()
+
+    price1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+    tsz = [d['date'] for d in dr]
+    dates = matplotlib.dates.date2num(tsz)
+    fig4 = plt.figure(figsize=(6, 4))
+    plt.plot_date(dates, price1, linestyle='solid', marker='None')
+    plt.title(f'{index.index_name} Daily Return (in %)')
+    plt.ylabel('Daily Return')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    buf4 = StringIO()
+    fig4.savefig(buf4, bbox_inches='tight', format='svg', transparent=True)
+    buf4.seek(0)
+    plt.close()
+
+    mean = 0 if len(price1)==0 else "{0:0.3f}".format(st.mean(price1))
+    std = 0 if len(price1)<=1 else "{0:0.3f}".format(st.stdev(price1))
+
+    price_ = [float(d['price']) for d in cp]
+    tsz_ = [d['date'] for d in cp]
+    dates_ = matplotlib.dates.date2num(tsz_)
+    fig1 = plt.figure(figsize=(6, 4))
+    plt.plot_date(dates_, price_, linestyle='solid', marker='None')
+    price = [float(d['price']) for d in ma]
+    tsz = [d['date1'] for d in ma]
+    dates = matplotlib.dates.date2num(tsz)
+    # fig2 = plt.figure(figsize=(8, 4))
+    plt.plot_date(dates, price, linestyle='solid', marker='None')
+    price = [float(d['price']) for d in ma2]
+    tsz = [d['date1'] for d in ma2]
+    dates = matplotlib.dates.date2num(tsz)
+    # fig3 = plt.figure(figsize=(8, 4))
+    plt.plot_date(dates, price, linestyle='solid', marker='None')
+    plt.legend(['Closing Price', 'MA over 20 days', 'MA over 40 days'])
+    plt.title(f'{index.index_name} Closing Price')
+    plt.ylabel('Closing Price')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    buf1 = StringIO()
+    fig1.savefig(buf1, bbox_inches='tight', format='svg', transparent=True)
+    buf1.seek(0)
+    plt.close()
+
+    # df = pd.DataFrame(price_, index=tsz_, columns=['price'])
+    t1 = time()
+    model = ARIMA(price_, order=(4, 0, 1))
+    model_fit = model.fit()
+    yhat = model_fit.predict(len(price_)+1, len(price_)+500, typ='levels')
+    t2 = time()
+    print(t2-t1)
+    print(len(yhat))
+    # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
+    # print(rms)
+    x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(500)]
+    figq = plt.figure(figsize=(15, 5))
+    # x = np.append(tsz_, x)
+    dates_1 = matplotlib.dates.date2num(x)
+    plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
+    plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
+    # plt.legend('Predicted Closing Price')
+    plt.title(f'{index.index_name} Predicted Closing Price')
+    plt.ylabel('Closing Price')
+    plt.xlabel('Date')
+    plt.xticks(rotation=90)
+    bufq = StringIO()
+    figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
+    bufq.seek(0)
+    plt.close()
+
+
+    form = corrForm_ind()
+    if request.method == 'POST':
+        form = corrForm_ind(request.POST)
+        if form.is_valid() and 'sfilt' in request.POST:
+            cors = form.cleaned_data['corrs']
+            # core = form.cleaned_data['corre']
+            # print(cor.sid)
+            cr = custom_query("""select d1.dr as dr1,d2.dr as dr2 from (select date, dr from daily_return_ind where iid=%s) as d1 join (select date, dr from daily_return_ind where iid=%s) d2 using(date);""", [iid, cors.iid])
+            dr1 = [0 if d['dr1'] is None else float(d['dr1']) for d in cr]
+            dr2 = [0 if d['dr2'] is None else float(d['dr2']) for d in cr]
+            fig5 = plt.figure(figsize=(6, 4))
+            plt.scatter(dr1, dr2, c='red')
+            plt.title(f'Correlation btw {index.index_name} and {cors.index_name}')
+            plt.ylabel(f'{cors.index_name}')
+            plt.xlabel(f'{index.index_name}')
+            buf5 = StringIO()
+            fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+            buf5.seek(0)
+            plt.close()
+            corr_v = np.corrcoef(dr1,dr2)[0][1]
+            corr_v = "{0:0.2f}".format(corr_v)
+            return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+    else:
+        form = corrForm_ind()
+        dr1 = []
+        dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+        dr2 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+        fig5 = plt.figure(figsize=(6, 4))
+        plt.scatter(dr1, dr2, c='red')
+        plt.title(f'Correlation btw {index.index_name} and {index.index_name}')
+        plt.ylabel(f'{index.index_name}')
+        plt.xlabel(f'{index.index_name}')
+        buf5 = StringIO()
+        fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+        buf5.seek(0)
+        plt.close()
+        corr_v = np.corrcoef(dr1,dr2)[0][1]
+        corr_v = "{0:0.2f}".format(corr_v)
+        return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})

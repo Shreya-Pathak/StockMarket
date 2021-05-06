@@ -1,4 +1,5 @@
 from django.db.models import F
+from django.db import connection
 import market.models as models
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
@@ -120,8 +121,31 @@ def trigger():
     end_time = time()
     print('Time elapsed =', end_time - start_time)
 
+def custom_query(query, format_vars=None):
+    "executes sql query and returns each row as a dict"
+    if not query.endswith(';'): query += ';'
+    with connection.cursor() as cursor:
+        cursor.execute(query, format_vars)
+        if not cursor.description: return None
+        columns = [col[0] for col in cursor.description]
+        rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return rows
+
+def update_views(interval=50):
+    t1 = time()
+    ref = custom_query("""
+        refresh materialized view closing_price;""")# refresh
+    ref2 = custom_query("""
+        refresh materialized view daily_return;""")# refresh
+    ref3 = custom_query("""
+        refresh materialized view closing_price_ind;""")# refresh
+    ref4 = custom_query("""
+        refresh materialized view daily_return_ind;""")# refresh
+    t2 = time()
+    print(t2-t1)
 
 def start_scheduler(interval=5):
     scheduler = BackgroundScheduler()
     scheduler.add_job(trigger, 'interval', seconds=interval)
+    scheduler.add_job(update_views, 'interval', seconds=interval)
     scheduler.start()
