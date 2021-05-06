@@ -20,7 +20,7 @@ def trigger():
         # Iterate over all buy orders
         current_buy_orders = models.BuySellOrder.objects.select_related('sid').filter(order_type='Buy')
         for order in current_buy_orders:
-            print('Current Order =', order.__dict__)
+            # print('Current Order =', order.__dict__)
 
             order_match_set = models.BuySellOrder.objects.select_related('folio_id__clid').filter(
                 sid=order.sid,
@@ -30,7 +30,7 @@ def trigger():
                 quantity__gt=F('completed_quantity')
             )
 
-            print('Stock =', order.sid.__dict__)
+            # print('Stock =', order.sid.__dict__)
 
             # Exchange happens, so update index prices and stock prices
             if len(order_match_set) > 0:
@@ -51,19 +51,29 @@ def trigger():
                 # Find Relevant Indices
                 index_match = models.PartOfIndex.objects.select_related('iid').filter(iid__eid=order.eid, sid=order.sid)
                 # Index weightage: Presently One-to-One Market-Cap
+                print("PRINTPRINTPRINTPRINTPRINTPRINTPRINTPRINTPRINTPRINTPRINTPRINT")
                 for index_id in index_match:
                     index_object = index_id.iid
                     prev_idx_price = index_object.last_price
+                    
                     new_idx_price = prev_idx_price + ((order.price - previous_price) * total_stocks) / index_object.base_divisor
                     new_index_entry = models.IndexPriceHistory(
                         iid=index_object,
                         creation_time=timezone.now(),
-                        price=index_object.last_price
+                        price=new_idx_price
                     )
                     indexpricehistory_list.append(new_index_entry)
                     index_object.last_price = new_idx_price
                     index_object.change = (new_idx_price / prev_idx_price - 1) * 100
                     index_object.save(update_fields=['last_price', 'change'])
+
+                    with open('file.txt', 'w+') as f:
+                        print(f"-----Order Price: {order.price}", file = f)
+                        print(f"-----Previous Price: {previous_price}", file = f)
+                        print(f"-----Total Stocks: {total_stocks}", file = f)
+                        print(f"-----Base Divisor: {index_object.base_divisor}", file = f)
+                        print(f'-----Previous Index Price: {prev_idx_price}', file = f)
+                        print(f'-----New Index Price: {new_idx_price}', file = f)
                 
 
             rem_quantity = order.quantity - order.completed_quantity
@@ -77,7 +87,7 @@ def trigger():
             for order_match in order_match_set:
                 if rem_quantity == 0: break
                 seller = order_match.folio_id.clid
-                print('Match Order =', order_match.__dict__)
+                # print('Match Order =', order_match.__dict__)
 
                 quantity_match = min(rem_quantity, order_match.quantity - order_match.completed_quantity)
                 matched_quantity += quantity_match
