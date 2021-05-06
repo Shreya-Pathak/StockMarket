@@ -70,8 +70,8 @@ def signup_view(request):
     client_form = forms.ClientSignUpForm()
     broker_form = forms.BrokerSignUpForm()
     if request.method == 'POST':
-        print(request.POST)
         if 'client_signup' in request.POST:
+            # print(request.POST)
             client_form = forms.ClientSignUpForm(request.POST)
             if client_form.is_valid():
                 name = client_form.cleaned_data.get('name')
