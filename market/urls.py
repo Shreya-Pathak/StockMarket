@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import autocompletes
 
 urlpatterns = [
     path('', views.index_view, name='index'),
@@ -10,4 +11,7 @@ urlpatterns = [
     path('companies/<int:cid>/<int:page_num>', views.companies_view, name='companies'),
     path('withdraw', views.withdraw_view, name='withdraw'),
     path('add_funds', views.add_funds_view, name='add_funds'),
+    path('stock-autocomplete', autocompletes.StockAutocomplete.as_view(), name='stock-autocomplete'),
+    path('exchange-autocomplete', autocompletes.ExchangeAutocomplete.as_view(), name='exchange-autocomplete'),
+    path('index-autocomplete', autocompletes.IndexAutocomplete.as_view(), name='index-autocomplete'),
 ]

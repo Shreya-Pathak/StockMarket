@@ -387,40 +387,48 @@ def analysis_view(request, sid=0, eid=0):
     buf1.seek(0)
     plt.close()
 
-    t1 = time()
-    model = ARIMA(price_, order=(6, 0, 2))
-    model_fit = model.fit()
-    yhat = model_fit.predict(len(price_)+1, len(price_)+100, typ='levels')
-    t2 = time()
-    print(t2-t1)
-    print(len(yhat))
-    # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
-    # print(rms)
-    x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(100)]
-    figq = plt.figure(figsize=(15, 5))
-    # x = np.append(tsz_, x)
-    dates_1 = matplotlib.dates.date2num(x)
-    plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
-    plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
-    # plt.legend('Predicted Closing Price')
-    plt.title(f'Predicted {stock.ticker} Closing Price at {exchange.name} Exchange')
-    plt.ylabel('Closing Price (in $)')
-    plt.xlabel('Date')
-    plt.xticks(rotation=90)
-    bufq = StringIO()
-    figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
-    bufq.seek(0)
-    plt.close()
+    b1 = False
+    x1 = ""
+    if len(price_)>1:
+        b1 = True
+        t1 = time()
+        model = ARIMA(price_, order=(6, 0, 2))
+        model_fit = model.fit()
+        yhat = model_fit.predict(len(price_)+1, len(price_)+30, typ='levels')
+        t2 = time()
+        print(t2-t1)
+        print(len(yhat))
+        # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
+        # print(rms)
+        x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(30)]
+        figq = plt.figure(figsize=(15, 5))
+        # x = np.append(tsz_, x)
+        dates_1 = matplotlib.dates.date2num(x)
+        plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
+        plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
+        # plt.legend('Predicted Closing Price')
+        plt.title(f'Predicted {stock.ticker} Closing Price at {exchange.name} Exchange')
+        plt.ylabel('Closing Price (in $)')
+        plt.xlabel('Date')
+        plt.xticks(rotation=90)
+        bufq = StringIO()
+        figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
+        bufq.seek(0)
+        plt.close()
+        x1 = bufq.getvalue()
+    else:
+        x1 = 0
+        messages.info(request, 'Too few points for prediction.')
 
-    form = corrForm()
+    form = OrderForm()
     # dform = dateForm()
     if request.method == 'POST':
         print(request.POST)
-        form = corrForm(request.POST)
-        if form.is_valid() and 'sfilt' in request.POST:
-            cors = form.cleaned_data['corrs']
-            core = form.cleaned_data['corre']
-            # print(cor.sid)
+        form = OrderForm(data=request.POST)
+        if form.is_valid():
+            print("here")
+            cors = form.cleaned_data['stock']
+            core = form.cleaned_data['exchange']
             cr = custom_query("""select d1.dr as dr1,d2.dr as dr2 from (select date, dr from daily_return where eid=%s and sid=%s) as d1 join (select date, dr from daily_return where eid=%s and sid=%s) d2 using(date);""", [eid, sid, core.eid, cors.sid])
             dr1 = [0 if d['dr1'] is None else float(d['dr1']) for d in cr]
             dr2 = [0 if d['dr2'] is None else float(d['dr2']) for d in cr]
@@ -435,14 +443,14 @@ def analysis_view(request, sid=0, eid=0):
             plt.close()
             corr_v = np.corrcoef(dr1,dr2)[0][1]
             corr_v = "{0:0.2f}".format(corr_v)
-            return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+            return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': x1, 'b1':b1})
         elif 'datepick' in request.POST:
             start_date=request.POST.get('start','')
             end_date=request.POST.get('end','')
             #please add redirect here and params to request
 
     # else:
-    form = corrForm()
+    form = OrderForm()
     
     dr1 = []
     dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
@@ -458,7 +466,7 @@ def analysis_view(request, sid=0, eid=0):
     plt.close()
     corr_v = np.corrcoef(dr1,dr2)[0][1]
     corr_v = "{0:0.2f}".format(corr_v)
-    return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+    return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': x1, 'b1':b1})
 
 
 def analysis_view_index(request, iid=0):
@@ -580,8 +588,8 @@ def analysis_view_index(request, iid=0):
     form = corrForm_ind()
     if request.method == 'POST':
         form = corrForm_ind(request.POST)
-        if form.is_valid() and 'sfilt' in request.POST:
-            cors = form.cleaned_data['corrs']
+        if form.is_valid():
+            cors = form.cleaned_data['index']
             # core = form.cleaned_data['corre']
             # print(cor.sid)
             cr = custom_query("""select d1.dr as dr1,d2.dr as dr2 from (select date, dr from daily_return_ind where iid=%s) as d1 join (select date, dr from daily_return_ind where iid=%s) d2 using(date);""", [iid, cors.iid])

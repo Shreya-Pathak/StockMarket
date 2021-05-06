@@ -39,7 +39,7 @@
 }
 </style> -->
 <!-- <img alt="" src="{{ data }}"> -->
-
+{% load crispy_forms_tags %} 
          
 <style type="text/css">
 .container {
@@ -140,11 +140,9 @@ function ma10()
 <section class="container">
 <div class="one">
   <br>
-<form method="post">
-  {% csrf_token %} {{ form.as_p }}
-  <button class="btn btn-primary" name="sfilt" type="submit" value="Submit">
-      Calculate Correlation
-    </button>
+<form method="POST">
+      {% csrf_token %}
+      {% crispy form %}
 </form>
 <br>
 Correlation = {{corrv}}
@@ -152,6 +150,8 @@ Correlation = {{corrv}}
 <div class="two">
   {{cimage|safe}}
 </div>
-<center>{{pred|safe}}</center>
-<br>
-<br>
+{% if b1 %}
+  <center>{{pred|safe}}</center>
+  <br>
+  <br>
+{% endif %}
