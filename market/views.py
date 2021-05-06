@@ -438,11 +438,7 @@ def analysis_view(request, sid=0, eid=0):
             return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
         elif 'datepick' in request.POST:
             start_date=request.POST.get('start','')
-            if start_date!='':
-                start_date=start_date[0]
             end_date=request.POST.get('end','')
-            if end_date!='':
-                end_date=end_date[0]
             #please add redirect here and params to request
 
     # else:
