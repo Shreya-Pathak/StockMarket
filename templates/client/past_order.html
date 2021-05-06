@@ -32,7 +32,7 @@ Past Orders
         <th>Exchange</th>
         <th>Type</th>
     </tr>
-{% for j in pendingorders %}
+{% for j in oldorders %}
     <tr>
         <td>{{ j.sid.ticker }}</td>
         <td>{{ j.quantity }}</td>
