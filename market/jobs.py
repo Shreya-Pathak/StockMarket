@@ -10,7 +10,7 @@ from django_bulk_update.helper import bulk_update
 # Need to check if both orders from same folio, stock, price get cancelled
 def trigger():
     start_time = time()
-    print('Order Matching')
+    # print('Order Matching')
     stockpricehistory_list = []
     indexpricehistory_list = []
     oldorder_list = []
@@ -119,7 +119,7 @@ def trigger():
     models.StockPriceHistory.objects.bulk_create(stockpricehistory_list)
     models.IndexPriceHistory.objects.bulk_create(indexpricehistory_list)
     end_time = time()
-    print('Time elapsed =', end_time - start_time)
+    # print('Time elapsed =', end_time - start_time)
 
 def custom_query(query, format_vars=None):
     "executes sql query and returns each row as a dict"
@@ -142,7 +142,7 @@ def update_views(interval=50):
     ref4 = custom_query("""
         refresh materialized view daily_return_ind;""")# refresh
     t2 = time()
-    print(t2-t1)
+    # print(t2-t1)
 
 def start_scheduler(interval=5):
     scheduler = BackgroundScheduler()

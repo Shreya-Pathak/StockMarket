@@ -102,6 +102,8 @@ def portfolio_view(request):
 				holding = models.Holdings(folio_id=folio, sid=stock, quantity=0, total_price=0)
 				holding.save()
 				messages.success(request, 'Stock added to portfolio.')
+			if folio is not None and stock is None:
+				messages.error(request,'Portfolio already exists.')
 	data = {}
 	for folio in models.Portfolio.objects.filter(clid=client):
 		data[folio.pname] = []

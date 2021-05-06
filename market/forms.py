@@ -6,6 +6,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Reset, Fieldset, Div
 from . import models
 from django.forms import ModelChoiceField
+from bootstrap_datepicker_plus import DatePickerInput
 
 class MyModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
@@ -57,3 +58,18 @@ class corrForm(forms.Form):
 class corrForm_ind(forms.Form):
     corrs = MyModelChoiceField_ind(label='Index', queryset=models.Indices.objects.all().order_by('index_name'))
     # corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))
+
+class dateForm(forms.Form):
+     start = forms.CharField(label='From'
+        
+    )
+     end = forms.CharField(label='To'
+        
+    )
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.helper = FormHelper()
+    #     self.helper.form_class = 'form-horizontal'
+    #     self.helper.label_class = 'col-lg-4'
+    #     self.helper.field_class = 'col-lg-8'
+    #     self.helper.layout = Layout(Div('acct_no', css_class='with-margin'), Div('name', css_class='with-margin'), Div('balance', css_class='with-margin'), Submit('submit', 'SetDate', css_class='btn btn-primary'))

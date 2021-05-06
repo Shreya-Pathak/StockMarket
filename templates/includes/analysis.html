@@ -39,6 +39,8 @@
 }
 </style> -->
 <!-- <img alt="" src="{{ data }}"> -->
+
+         
 <style type="text/css">
 .container {
   width: 100%;
@@ -102,7 +104,26 @@ function ma10()
     document.getElementById('theImage').innerHTML='{{ ma1|safe }}';
     }
 </script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#datepicker" ).datepicker();
+  } );
+  $( function() {
+    $( "#datepicker1" ).datepicker();
+  } );
+  </script>
 <h2> Analysis of {{st}} at {{ex}}</h2>
+<form method="post"> {% csrf_token %} 
+<p>Start: <input type="text" id="datepicker" name="start"></p>
+<p>End: <input type="text" id="datepicker1" name="end"></p> 
+ <button class="btn btn-primary" name="datepick" type="submit" value="Submit">
+      Go
+    </button> 
+</form>
 <center>Expected Return (mean): {{mean}}
 <br> Risk (standard deviation): {{risk}}</center>
 {{data|safe}}{{dr|safe}}

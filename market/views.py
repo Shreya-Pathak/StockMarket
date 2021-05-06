@@ -334,7 +334,7 @@ def analysis_view(request, sid=0, eid=0):
     fig = plt.figure(figsize=(6, 4))
     plt.plot_date(dates, price, linestyle='solid', marker='None')
     plt.title(f'{stock.ticker} Price at {exchange.name} Exchange')
-    plt.ylabel('Price')
+    plt.ylabel('Price (in $)')
     plt.xlabel('Date')
     plt.xticks(rotation=90)
     buf = StringIO()
@@ -376,7 +376,7 @@ def analysis_view(request, sid=0, eid=0):
     plt.plot_date(dates, price, linestyle='solid', marker='None')
     plt.legend(['Closing Price', 'MA over 3 days', 'MA over 5 days'])
     plt.title(f'{stock.ticker} Closing Price at {exchange.name} Exchange')
-    plt.ylabel('Closing Price')
+    plt.ylabel('Closing Price (in $)')
     plt.xlabel('Date')
     plt.xticks(rotation=90)
     buf1 = StringIO()
@@ -385,7 +385,7 @@ def analysis_view(request, sid=0, eid=0):
     plt.close()
 
     t1 = time()
-    model = ARIMA(price_, order=(4, 0, 1))
+    model = ARIMA(price_, order=(6, 0, 2))
     model_fit = model.fit()
     yhat = model_fit.predict(len(price_)+1, len(price_)+100, typ='levels')
     t2 = time()
@@ -401,7 +401,7 @@ def analysis_view(request, sid=0, eid=0):
     plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
     # plt.legend('Predicted Closing Price')
     plt.title(f'Predicted {stock.ticker} Closing Price at {exchange.name} Exchange')
-    plt.ylabel('Closing Price')
+    plt.ylabel('Closing Price (in $)')
     plt.xlabel('Date')
     plt.xticks(rotation=90)
     bufq = StringIO()
@@ -410,7 +410,9 @@ def analysis_view(request, sid=0, eid=0):
     plt.close()
 
     form = corrForm()
+    # dform = dateForm()
     if request.method == 'POST':
+        print(request.POST)
         form = corrForm(request.POST)
         if form.is_valid() and 'sfilt' in request.POST:
             cors = form.cleaned_data['corrs']
@@ -431,23 +433,33 @@ def analysis_view(request, sid=0, eid=0):
             corr_v = np.corrcoef(dr1,dr2)[0][1]
             corr_v = "{0:0.2f}".format(corr_v)
             return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
-    else:
-        form = corrForm()
-        dr1 = []
-        dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
-        dr2 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
-        fig5 = plt.figure(figsize=(6, 4))
-        plt.scatter(dr1, dr2, c='red')
-        plt.title(f'Correlation btw {stock.ticker} at {exchange.name} and {stock.ticker} at {exchange.name}')
-        plt.ylabel(f'{stock.ticker} at {exchange.name}')
-        plt.xlabel(f'{stock.ticker} at {exchange.name}')
-        buf5 = StringIO()
-        fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
-        buf5.seek(0)
-        plt.close()
-        corr_v = np.corrcoef(dr1,dr2)[0][1]
-        corr_v = "{0:0.2f}".format(corr_v)
-        return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+        elif 'datepick' in request.POST:
+            start_date=request.POST.get('start','')
+            if start_date!='':
+                start_date=start_date[0]
+            end_date=request.POST.get('end','')
+            if end_date!='':
+                end_date=end_date[0]
+            #please add redirect here and params to request
+
+    # else:
+    form = corrForm()
+    
+    dr1 = []
+    dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+    dr2 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+    fig5 = plt.figure(figsize=(6, 4))
+    plt.scatter(dr1, dr2, c='red')
+    plt.title(f'Correlation btw {stock.ticker} at {exchange.name} and {stock.ticker} at {exchange.name}')
+    plt.ylabel(f'{stock.ticker} at {exchange.name}')
+    plt.xlabel(f'{stock.ticker} at {exchange.name}')
+    buf5 = StringIO()
+    fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+    buf5.seek(0)
+    plt.close()
+    corr_v = np.corrcoef(dr1,dr2)[0][1]
+    corr_v = "{0:0.2f}".format(corr_v)
+    return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
 
 
 def analysis_view_index(request, iid=0):
@@ -540,30 +552,30 @@ def analysis_view_index(request, iid=0):
     plt.close()
 
     # df = pd.DataFrame(price_, index=tsz_, columns=['price'])
-    t1 = time()
-    model = ARIMA(price_, order=(4, 0, 1))
-    model_fit = model.fit()
-    yhat = model_fit.predict(len(price_)+1, len(price_)+500, typ='levels')
-    t2 = time()
-    print(t2-t1)
-    print(len(yhat))
-    # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
-    # print(rms)
-    x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(500)]
-    figq = plt.figure(figsize=(15, 5))
-    # x = np.append(tsz_, x)
-    dates_1 = matplotlib.dates.date2num(x)
-    plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
-    plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
-    # plt.legend('Predicted Closing Price')
-    plt.title(f'{index.index_name} Predicted Closing Price')
-    plt.ylabel('Closing Price')
-    plt.xlabel('Date')
-    plt.xticks(rotation=90)
-    bufq = StringIO()
-    figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
-    bufq.seek(0)
-    plt.close()
+    # t1 = time()
+    # model = ARIMA(price_, order=(4, 0, 1))
+    # model_fit = model.fit()
+    # yhat = model_fit.predict(len(price_)+1, len(price_)+500, typ='levels')
+    # t2 = time()
+    # print(t2-t1)
+    # print(len(yhat))
+    # # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
+    # # print(rms)
+    # x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(500)]
+    # figq = plt.figure(figsize=(15, 5))
+    # # x = np.append(tsz_, x)
+    # dates_1 = matplotlib.dates.date2num(x)
+    # plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
+    # plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
+    # # plt.legend('Predicted Closing Price')
+    # plt.title(f'{index.index_name} Predicted Closing Price')
+    # plt.ylabel('Closing Price')
+    # plt.xlabel('Date')
+    # plt.xticks(rotation=90)
+    # bufq = StringIO()
+    # figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
+    # bufq.seek(0)
+    # plt.close()
 
 
     form = corrForm_ind()
@@ -587,7 +599,7 @@ def analysis_view_index(request, iid=0):
             plt.close()
             corr_v = np.corrcoef(dr1,dr2)[0][1]
             corr_v = "{0:0.2f}".format(corr_v)
-            return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+            return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v})
     else:
         form = corrForm_ind()
         dr1 = []
@@ -604,4 +616,4 @@ def analysis_view_index(request, iid=0):
         plt.close()
         corr_v = np.corrcoef(dr1,dr2)[0][1]
         corr_v = "{0:0.2f}".format(corr_v)
-        return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': bufq.getvalue()})
+        return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v})
