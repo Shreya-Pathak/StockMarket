@@ -8,6 +8,8 @@ from . import models
 from django.forms import ModelChoiceField
 from bootstrap_datepicker_plus import DatePickerInput
 
+from dal import autocomplete, forward
+
 class MyModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         return "%s" % obj.ticker
@@ -51,9 +53,25 @@ class AddAcctForm(forms.Form):
         self.helper.field_class = 'col-lg-8'
         self.helper.layout = Layout(Div('acct_no', css_class='with-margin'), Div('name', css_class='with-margin'), Div('balance', css_class='with-margin'), Submit('submit', 'Add Account', css_class='btn btn-primary'))
 
+# class corrForm(forms.ModelForm):
+#     birth_country = forms.ModelChoiceField(
+#         queryset=models.Stock.objects.all(),
+#         widget=autocomplete.ModelSelect2(url='stock-autocomplete')
+#     )
+
+#     class Meta:
+#         model = models.Stock
+#         fields = ('__all__')
+
+
 class corrForm(forms.Form):
-    corrs = MyModelChoiceField(label='Stock', queryset=models.Stock.objects.all().order_by('ticker'))
+    corrs = ModelChoiceField(label='Stock', queryset=models.Stock.objects.all())
     corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        data = kwargs.pop('data', None)
+        if data is not None:
+            self.fields['corre'].queryset = models.Stock.objects.filter(pk=int(data['stock']))
 
 class corrForm_ind(forms.Form):
     corrs = MyModelChoiceField_ind(label='Index', queryset=models.Indices.objects.all().order_by('index_name'))
