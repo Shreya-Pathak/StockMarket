@@ -9,14 +9,14 @@ import market.models as models
 
 numeric = RegexValidator(r'^[0-9]+$', 'Only digit characters.')
 decimals = RegexValidator(r'^\d+[.,]?\d*$|^\d*[.,]?\d+$', 'Only decimal numbers.')
-
+telephone = RegexValidator(r'[0-9]+$','Only digits allowed')
 
 class ClientSignUpForm(forms.Form):
     email = forms.EmailField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))
     password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={'placeholder': 'Required'}))
     name = forms.CharField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))
     address = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
-    telephone = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+    telephone = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}), validators=[telephone])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,7 +32,7 @@ class BrokerSignUpForm(forms.Form):
     password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={'placeholder': 'Required'}))
     name = forms.CharField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}))
     address = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
-    telephone = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}))
+    telephone = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Optional'}), validators=[telephone])
     commission = forms.CharField(required=True, widget=forms.TextInput(attrs={'placeholder': 'Required'}), validators=[decimals])
 
     def __init__(self, *args, **kwargs):
