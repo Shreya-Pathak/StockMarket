@@ -160,7 +160,7 @@ def update_views(interval=50):
     t2 = time()
     # print(t2-t1)
 
-def start_scheduler(interval=5):
+def start_scheduler(interval=10):
     scheduler = BackgroundScheduler()
     scheduler.add_job(trigger, 'interval', seconds=interval)
     scheduler.add_job(update_views, 'interval', seconds=interval)
