@@ -73,7 +73,7 @@ def portfolio_view(request):
 		stock_wish = models.StockWishlist.objects.select_related('wish_id').filter(pk=hold_id, wish_id__clid=client).first()
 		if holding is None:
 			messages.error(request, 'You can\'t delete this portfolio entry.')
-		elif (holding.quantity != 0) or (holding.total_price != 0):
+		elif holding.quantity != 0:
 			messages.error(request, 'You can\'t delete a non-zero quantity owned portfolio entry.')
 		else:
 			folio = holding.folio_id
