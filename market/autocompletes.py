@@ -12,8 +12,8 @@ def is_int(v):
 class StockAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return models.Stock.objects.none()
+        # if not self.request.user.is_authenticated:
+        #     return models.Stock.objects.none()
         qs = models.Stock.objects.all()
         qs = qs.filter(ticker__icontains=self.q).order_by('ticker')
         return qs
@@ -21,8 +21,8 @@ class StockAutocomplete(autocomplete.Select2QuerySetView):
 class IndexAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return models.Indices.objects.none()
+        # if not self.request.user.is_authenticated:
+        #     return models.Indices.objects.none()
         qs = models.Indices.objects.all()
         qs = qs.filter(index_name__icontains=self.q).order_by('index_name')
         return qs
@@ -31,8 +31,8 @@ class IndexAutocomplete(autocomplete.Select2QuerySetView):
 class ExchangeAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return models.Exchange.objects.none()
+        # if not self.request.user.is_authenticated:
+        #     return models.Exchange.objects.none()
         sid = is_int(self.forwarded.get('stock', 0))
         if not sid:
             return models.Exchange.objects.none()
