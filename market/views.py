@@ -420,31 +420,33 @@ def analysis_view(request, sid=0, eid=0):
         x1 = 0
         messages.info(request, 'Too few points for prediction.')
 
-    form = OrderForm()
+    # form = OrderForm()
     # dform = dateForm()
     if request.method == 'POST':
         print(request.POST)
-        form = OrderForm(data=request.POST)
-        if form.is_valid():
-            print("here")
-            cors = form.cleaned_data['stock']
-            core = form.cleaned_data['exchange']
-            cr = custom_query("""select d1.dr as dr1,d2.dr as dr2 from (select date, dr from daily_return where eid=%s and sid=%s) as d1 join (select date, dr from daily_return where eid=%s and sid=%s) d2 using(date);""", [eid, sid, core.eid, cors.sid])
-            dr1 = [0 if d['dr1'] is None else float(d['dr1']) for d in cr]
-            dr2 = [0 if d['dr2'] is None else float(d['dr2']) for d in cr]
-            fig5 = plt.figure(figsize=(6, 4))
-            plt.scatter(dr1, dr2, c='red')
-            plt.title(f'Correlation btw {stock.ticker} at {exchange.name} and {cors.ticker} at {core.name}')
-            plt.ylabel(f'{cors.ticker} at {core.name}')
-            plt.xlabel(f'{stock.ticker} at {exchange.name}')
-            buf5 = StringIO()
-            fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
-            buf5.seek(0)
-            plt.close()
-            corr_v = np.corrcoef(dr1,dr2)[0][1]
-            corr_v = "{0:0.2f}".format(corr_v)
-            return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': x1, 'b1':b1})
-        elif 'datepick' in request.POST:
+        # form = OrderForm(data=request.POST)
+        if 'submit1' in request.POST:
+            form = OrderForm(data=request.POST)
+            if form.is_valid():
+                print("here")
+                cors = form.cleaned_data['stock']
+                core = form.cleaned_data['exchange']
+                cr = custom_query("""select d1.dr as dr1,d2.dr as dr2 from (select date, dr from daily_return where eid=%s and sid=%s) as d1 join (select date, dr from daily_return where eid=%s and sid=%s) d2 using(date);""", [eid, sid, core.eid, cors.sid])
+                dr1 = [0 if d['dr1'] is None else float(d['dr1']) for d in cr]
+                dr2 = [0 if d['dr2'] is None else float(d['dr2']) for d in cr]
+                fig5 = plt.figure(figsize=(6, 4))
+                plt.scatter(dr1, dr2, c='red')
+                plt.title(f'Correlation btw {stock.ticker} at {exchange.name} and {cors.ticker} at {core.name}')
+                plt.ylabel(f'{cors.ticker} at {core.name}')
+                plt.xlabel(f'{stock.ticker} at {exchange.name}')
+                buf5 = StringIO()
+                fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+                buf5.seek(0)
+                plt.close()
+                corr_v = np.corrcoef(dr1,dr2)[0][1]
+                corr_v = "{0:0.2f}".format(corr_v)
+                return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': x1, 'b1':b1})
+        if 'datepick' in request.POST:
             start_date=request.POST.get('start','')
             end_date=request.POST.get('end','')
             #please add redirect here and params to request

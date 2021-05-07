@@ -74,7 +74,7 @@ class corrForm(forms.Form):
             self.fields['corre'].queryset = models.Stock.objects.filter(pk=int(data['stock']))
 
 class OrderForm(forms.Form):
-    stock = forms.ModelChoiceField(queryset=models.Stock.objects.all(), widget=autocomplete.ModelSelect2(url='stock-autocomplete', attrs={'data-placeholder': 'Search'}))
+    stock = forms.ModelChoiceField(queryset=models.Stock.objects.none(), widget=autocomplete.ModelSelect2(url='stock-autocomplete', attrs={'data-placeholder': 'Search'}))
     exchange = forms.ModelChoiceField(queryset=models.Exchange.objects.none(), widget=autocomplete.ModelSelect2(url='exchange-autocomplete', attrs={'data-placeholder': 'Search'}, forward=['stock']))
 
     def __init__(self, *args, **kwargs):
@@ -83,9 +83,11 @@ class OrderForm(forms.Form):
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-lg-4'
         self.helper.field_class = 'col-lg-6 mb-0'
-        self.helper.layout = Layout(Div('stock', css_class='with-margin'), Div('exchange', css_class='with-margin'), Submit('submit', 'Calculate Correlation', css_class='btn btn-primary'))
+        self.helper.layout = Layout(Div('stock', css_class='with-margin'), Div('exchange', css_class='with-margin'), Submit('submit1', 'Calculate Correlation', css_class='btn btn-primary'))
         data = kwargs.pop('data', None)
-        if data is not None:
+        # print(data['stock'])
+        print(data == None)
+        if data is not None and 'stock' in data:
             self.fields['stock'].queryset = models.Stock.objects.filter(pk=int(data['stock']))
             self.fields['exchange'].queryset = models.Exchange.objects.filter(pk=int(data['exchange']))
             
