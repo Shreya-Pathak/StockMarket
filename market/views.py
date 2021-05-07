@@ -290,9 +290,6 @@ def withdraw_view(request):
                     elif user_user.balance < funds:
                         messages.error(request, "Insufficient Funds in your wallet.")
                     else:
-                        print('flu')
-                        sleep(3)
-                        print('ku')
                         user_user.balance -= funds
                         acct.balance += funds
                         acct.save()
