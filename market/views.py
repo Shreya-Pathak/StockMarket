@@ -249,14 +249,17 @@ def add_funds_view(request):
                 acct_no = form.cleaned_data['acct_no']
                 name = form.cleaned_data['name']
                 balance = form.cleaned_data['balance']
-                acct = models.BankAccount.objects.filter(account_number=acct_no).first()
+                acct = models.BankAccount.objects.filter(account_number=acct_no,pid=user).first()
                 if acct is None:
-                    acct = models.BankAccount(account_number=acct_no, bank_name=name, pid=user, balance=balance)
-                    acct.save()
-                    messages.success(request, 'Bank Account created.')
+                    try:
+                        acct = models.BankAccount(account_number=acct_no, bank_name=name, pid=user, balance=balance)
+                        acct.save()
+                        messages.success(request, 'Bank Account created.')
+                    except:
+                        messages.error(request,'Account already exists.')
                 else:
                     messages.error(request, 'This bank account already exists.')
-    accts = models.BankAccount.objects.filter(pid=user)
+    accts = models.BankAccount.objects.filter(pid=user).order_by('account_number')
     return render(request, f'{user_type}add_funds.html', {'form':form, 'accts':accts})
 
 
@@ -295,7 +298,7 @@ def withdraw_view(request):
                         acct.save()
                         user_user.save()
                         messages.success(request, "Funds added to your bank account.")
-    accts = models.BankAccount.objects.filter(pid=user)
+    accts = models.BankAccount.objects.filter(pid=user).order_by('account_number')
     return render(request, f'{user_type}withdraw.html', {'accts':accts})
 
 
