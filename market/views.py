@@ -279,10 +279,10 @@ def withdraw_view(request):
             else:
                 with transaction.atomic():
                     if user_type == 'broker/':
-                        user_user = models.Broker.objects.filter(username=request.user.username).first()
+                        user_user = models.Broker.objects.filter(username=request.user.username).select_for_update().first()
                         user = user_user.bid
                     else:
-                        user_user = models.Client.objects.filter(username=request.user.username).first()
+                        user_user = models.Client.objects.filter(username=request.user.username).select_for_update().first()
                         user = user_user.clid
                     acct = models.BankAccount.objects.filter(account_number=acct_no, pid=user).select_for_update().first()
                     if acct is None:
@@ -290,6 +290,9 @@ def withdraw_view(request):
                     elif user_user.balance < funds:
                         messages.error(request, "Insufficient Funds in your wallet.")
                     else:
+                        print('flu')
+                        sleep(3)
+                        print('ku')
                         user_user.balance -= funds
                         acct.balance += funds
                         acct.save()
