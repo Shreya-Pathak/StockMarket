@@ -333,7 +333,7 @@ def analysis_view(request, sid=0, eid=0,start_date='01-01-0001',end_date='12-31-
         WHERE ph.eid=%s and ph.sid=%s and creation_time>=to_date(%s,'MM-DD-YYYY') and creation_time<=to_date(%s,'MM-DD-YYYY') ORDER BY creation_time;""", [eid, sid,start_date,end_date])
 
     cp = custom_query("""
-        SELECT date, price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') ;""", [eid, sid,start_date,end_date])
+        SELECT date, price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') order by date;""", [eid, sid,start_date,end_date])
 
     ma = custom_query("""
         SELECT time_bucket('3 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY')  group by date1 order by date1;""", [eid, sid,start_date,end_date])#moving avg
@@ -342,7 +342,7 @@ def analysis_view(request, sid=0, eid=0,start_date='01-01-0001',end_date='12-31-
         SELECT time_bucket('5 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') group by date1 order by date1;""", [eid, sid, start_date,end_date])#moving avg
 
     dr = custom_query("""
-        SELECT date, dr from daily_return where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY');""", [eid, sid,start_date,end_date])
+        SELECT date, dr from daily_return where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') order by date;""", [eid, sid,start_date,end_date])
     # dr = custom_query("""
     #     SELECT date, ((price/lag(price, 1) over (partition by (sid, eid) order by date))-1) dr from closing_price where eid=%s and sid=%s;""", [eid, sid])#daily return
     # dict_ph = [{'x': d['creation_time'], 'y': d['price']} for d in ph]
@@ -498,7 +498,7 @@ def analysis_view(request, sid=0, eid=0,start_date='01-01-0001',end_date='12-31-
     return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': x1, 'b1':b1})
 
 
-def analysis_view_index(request, iid=0):
+def analysis_view_index(request, iid=0, start_date='01-01-0001',end_date='12-31-9999'):
     user = get_user_type(request)
     if user == 'admin/':
         return render(request, 'forbidden.html', {})
@@ -511,19 +511,19 @@ def analysis_view_index(request, iid=0):
     t1 = time()
     
     ph = custom_query("""
-        SELECT price, creation_time FROM market_IndexPricehistory as ph WHERE ph.iid=%s ORDER BY creation_time;""", [iid])
+        SELECT price, creation_time FROM market_IndexPricehistory as ph WHERE ph.iid=%s and creation_time>=to_date(%s,'MM-DD-YYYY') and creation_time<=to_date(%s,'MM-DD-YYYY') ORDER BY creation_time;""", [iid, start_date,end_date])
 
     cp = custom_query("""
-        SELECT date, price from closing_price_ind where iid=%s order by date;""", [iid])
+        SELECT date, price from closing_price_ind where iid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') order by date;""", [iid, start_date,end_date])
 
     ma = custom_query("""
-        SELECT time_bucket('20 days', date) as date1, avg(price) as price from closing_price_ind where iid=%s group by date1 order by date1;""", [iid])#moving avg
+        SELECT time_bucket('20 days', date) as date1, avg(price) as price from closing_price_ind where iid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') group by date1 order by date1;""", [iid, start_date,end_date])#moving avg
 
     ma2 = custom_query("""
-        SELECT time_bucket('40 days', date) as date1, avg(price) as price from closing_price_ind where iid=%s group by date1 order by date1;""", [iid])#moving avg
+        SELECT time_bucket('40 days', date) as date1, avg(price) as price from closing_price_ind where iid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') group by date1 order by date1;""", [iid, start_date,end_date])#moving avg
 
     dr = custom_query("""
-        SELECT date, dr from daily_return_ind where iid=%s;""", [iid])
+        SELECT date, dr from daily_return_ind where iid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') order by date;""", [iid, start_date,end_date])
     # dr = custom_query("""
     #     SELECT date, ((price/lag(price, 1) over (partition by (sid, eid) order by date))-1) dr from closing_price where eid=%s and sid=%s;""", [eid, sid])#daily return
     # dict_ph = [{'x': d['creation_time'], 'y': d['price']} for d in ph]
@@ -587,33 +587,6 @@ def analysis_view_index(request, iid=0):
     buf1.seek(0)
     plt.close()
 
-    # df = pd.DataFrame(price_, index=tsz_, columns=['price'])
-    # t1 = time()
-    # model = ARIMA(price_, order=(4, 0, 1))
-    # model_fit = model.fit()
-    # yhat = model_fit.predict(len(price_)+1, len(price_)+500, typ='levels')
-    # t2 = time()
-    # print(t2-t1)
-    # print(len(yhat))
-    # # rms = sqrt(mean_squared_error(pr, yhat[:-100]))
-    # # print(rms)
-    # x = [tsz_[-1] + datetime.timedelta(days=i) for i in range(500)]
-    # figq = plt.figure(figsize=(15, 5))
-    # # x = np.append(tsz_, x)
-    # dates_1 = matplotlib.dates.date2num(x)
-    # plt.plot_date(dates_, price_, linestyle='solid', marker='None', color='black')
-    # plt.plot_date(dates_1, yhat, linestyle='solid', marker='None', color='red')
-    # # plt.legend('Predicted Closing Price')
-    # plt.title(f'{index.index_name} Predicted Closing Price')
-    # plt.ylabel('Closing Price')
-    # plt.xlabel('Date')
-    # plt.xticks(rotation=90)
-    # bufq = StringIO()
-    # figq.savefig(bufq, bbox_inches='tight', format='svg', transparent=True)
-    # bufq.seek(0)
-    # plt.close()
-
-
     form = corrForm_ind()
     if request.method == 'POST':
         form = corrForm_ind(request.POST)
@@ -636,20 +609,34 @@ def analysis_view_index(request, iid=0):
             corr_v = np.corrcoef(dr1,dr2)[0][1]
             corr_v = "{0:0.2f}".format(corr_v)
             return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v})
-    else:
-        form = corrForm_ind()
-        dr1 = []
-        dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
-        dr2 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
-        fig5 = plt.figure(figsize=(6, 4))
-        plt.scatter(dr1, dr2, c='red')
-        plt.title(f'Correlation btw {index.index_name} and {index.index_name}')
-        plt.ylabel(f'{index.index_name}')
-        plt.xlabel(f'{index.index_name}')
-        buf5 = StringIO()
-        fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
-        buf5.seek(0)
-        plt.close()
-        corr_v = np.corrcoef(dr1,dr2)[0][1]
-        corr_v = "{0:0.2f}".format(corr_v)
-        return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v})
+        if 'datepick' in request.POST:
+            start_date=request.POST.get('start','')
+            fin_st=''
+            for i in start_date:
+                fin_st=fin_st+('-' if i=='/' else i)
+            end_date=request.POST.get('end','')
+            fin_end=''
+            for i in end_date:
+                fin_end=fin_end+('-' if i=='/' else i)
+            if fin_end=='':
+                fin_end='12-31-9999'
+            if fin_st=='':
+                fin_st='01-01-0001'
+            return redirect(f'/market/analysis_ind/{iid}/{fin_st}/{fin_end}')
+    # else:
+    form = corrForm_ind()
+    dr1 = []
+    dr1 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+    dr2 = [0 if d['dr'] is None else float(d['dr']) for d in dr]
+    fig5 = plt.figure(figsize=(6, 4))
+    plt.scatter(dr1, dr2, c='red')
+    plt.title(f'Correlation btw {index.index_name} and {index.index_name}')
+    plt.ylabel(f'{index.index_name}')
+    plt.xlabel(f'{index.index_name}')
+    buf5 = StringIO()
+    fig5.savefig(buf5, bbox_inches='tight', format='svg', transparent=True)
+    buf5.seek(0)
+    plt.close()
+    corr_v = np.corrcoef(dr1,dr2)[0][1]
+    corr_v = "{0:0.2f}".format(corr_v)
+    return render(request, f'{user}analysis_ind.html', {'st':index.index_name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v})

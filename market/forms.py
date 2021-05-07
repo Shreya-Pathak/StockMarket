@@ -90,11 +90,11 @@ class OrderForm(forms.Form):
         if data is not None and 'stock' in data:
             self.fields['stock'].queryset = models.Stock.objects.filter(pk=int(data['stock']))
             self.fields['exchange'].queryset = models.Exchange.objects.filter(pk=int(data['exchange']))
-            
+
 class corrForm_ind(forms.Form):
-    # corrs = MyModelChoiceField_ind(label='Index', queryset=models.Indices.objects.all().order_by('index_name'))
-    index = forms.ModelChoiceField(queryset=models.Indices.objects.all(), widget=autocomplete.ModelSelect2(url='index-autocomplete', attrs={'data-placeholder': 'Search'}),  to_field_name="index_name")
-    # corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))
+    index = MyModelChoiceField_ind(label='Index', queryset=models.Indices.objects.all().order_by('index_name'))
+    # index = forms.ModelChoiceField(queryset=models.Indices.objects.none(), widget=autocomplete.ModelSelect2(url='index-autocomplete', attrs={'data-placeholder': 'Search'}))
+    # # corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -103,8 +103,23 @@ class corrForm_ind(forms.Form):
         self.helper.field_class = 'col-lg-6 mb-0'
         self.helper.layout = Layout(Div('index', css_class='with-margin'), Submit('submit', 'Calculate Correlation', css_class='btn btn-primary'))
         data = kwargs.pop('data', None)
-        if data is not None:
+        if data is not None and 'index' in data:
             self.fields['index'].queryset = models.Indices.objects.filter(pk=int(data['index']))
+
+# class corrForm_ind(forms.Form):
+#     # corrs = MyModelChoiceField_ind(label='Index', queryset=models.Indices.objects.all().order_by('index_name'))
+#     index = forms.ModelChoiceField(queryset=models.Indices.objects.all(), widget=autocomplete.ModelSelect2(url='index-autocomplete', attrs={'data-placeholder': 'Search'}),  to_field_name="index_name")
+#     # corre = MyModelChoiceField1(label='Exchange', queryset=models.Exchange.objects.all().order_by('name'))
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.helper = FormHelper()
+#         self.helper.form_class = 'form-horizontal'
+#         self.helper.label_class = 'col-lg-4'
+#         self.helper.field_class = 'col-lg-6 mb-0'
+#         self.helper.layout = Layout(Div('index', css_class='with-margin'), Submit('submit', 'Calculate Correlation', css_class='btn btn-primary'))
+#         data = kwargs.pop('data', None)
+#         if data is not None:
+#             self.fields['index'].queryset = models.Indices.objects.filter(pk=int(data['index']))
 
 class dateForm(forms.Form):
      start = forms.CharField(label='From'

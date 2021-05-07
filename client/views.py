@@ -90,6 +90,8 @@ def portfolio_view(request):
 			pname = formdata.cleaned_data['pname']
 			stock = formdata.cleaned_data['stock']
 			folio = models.Portfolio.objects.filter(pname__iexact=pname, clid=client).first()
+			if folio is not None and stock is None:
+				messages.error(request,'Portfolio already exists.')
 			if folio is None:
 				folio = models.Portfolio(pname=pname, clid=client)
 				folio.save()
@@ -102,8 +104,6 @@ def portfolio_view(request):
 				holding = models.Holdings(folio_id=folio, sid=stock, quantity=0, total_price=0)
 				holding.save()
 				messages.success(request, 'Stock added to portfolio.')
-			if folio is not None and stock is None:
-				messages.error(request,'Portfolio already exists.')
 	data = {}
 	for folio in models.Portfolio.objects.filter(clid=client):
 		data[folio.pname] = []
@@ -324,6 +324,9 @@ def wishlists_view(request):
 			wname = formdata.cleaned_data['wname']
 			stock = formdata.cleaned_data['stock']
 			wish = models.Wishlist.objects.filter(wname__iexact=wname, clid=client).first()
+			if wish is not None and stock is None:
+				messages.error(request, 'Wishlist already exists')
+				return HttpResponseRedirect('wishlists')
 			if wish is None:
 				wish = models.Wishlist(wname=wname, clid=client)
 				wish.save()
