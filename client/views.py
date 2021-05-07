@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.utils import timezone
 from decimal import Decimal
 from market.views import render
-
+from django.db import transaction
 
 # Create your views here.
 def check_type(v, t=int):
@@ -73,19 +73,12 @@ def portfolio_view(request):
 		stock_wish = models.StockWishlist.objects.select_related('wish_id').filter(pk=hold_id, wish_id__clid=client).first()
 		if holding is None:
 			messages.error(request, 'You can\'t delete this portfolio entry.')
-		elif holding.quantity != 0:
+		elif (holding.quantity != 0) or (holding.total_price != 0):
 			messages.error(request, 'You can\'t delete a non-zero quantity owned portfolio entry.')
 		else:
 			folio = holding.folio_id
-			try:
-				with transaction.atomic():
-					holding.delete()
-				messages.success(request, 'Portfolio entry deleted.')
-			except:
-				messages.error(request, 'Cannot delete entry due to an existing order placed')
-			if not models.Holdings.objects.filter(folio_id=folio).exists():
-				folio.delete()
-				messages.success(request, 'Portfolio also deleted.')
+			holding.delete()
+			messages.success(request, 'Portfolio entry deleted.')
 		return HttpResponseRedirect('portfolio')
 
 	if request.method == 'POST':
@@ -221,8 +214,8 @@ def cancel_order_view(request):
 					clid.balance += order.price * order.completed_quantity
 				holding = models.Holdings.objects.filter(folio_id=order.folio_id, sid=order.sid).first()
 				if holding is None:
-					messages.error(request, 'Invalid order.')
-					return HttpResponseRedirect('cancel_order')
+					holding = models.Holdings(folio_id=order.folio_id,sid=order.sid,quantity=0,total_price=0)
+					messages.success(request, 'New Holding created due to deletion')
 				holding.quantity += rem_quantity
 				holding.total_price += rem_quantity * order.price
 				holding.save()

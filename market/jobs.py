@@ -83,7 +83,7 @@ def trigger():
             buy_stock_holding = models.Holdings.objects.filter(folio_id=order.folio_id, sid=order.sid).first()
             newly_made=False
             if buy_stock_holding==None:
-                newly_made=True
+                newly_made = True
                 buy_stock_holding = models.Holdings(folio_id=order.folio_id,sid=order.sid,quantity=0,total_price=0)
             # Match Orders
             matched_quantity = 0
