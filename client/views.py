@@ -207,6 +207,7 @@ def cancel_order_view(request):
 			if order.order_type == 'Buy':
 				clid.balance += order.price * rem_quantity
 			else:
+				clid.balance += order.price * order.completed_quantity
 				holding = models.Holdings.objects.filter(folio_id=order.folio_id, sid=order.sid).first()
 				if holding is None:
 					messages.error(request, 'Invalid order.')

@@ -28,7 +28,7 @@ def trigger():
                 order_type='Sell',
                 price=order.price,
                 quantity__gt=F('completed_quantity')
-            )
+            ).exclude(folio_id=order.folio_id)
 
             # print('Stock =', order.sid.__dict__)
 
