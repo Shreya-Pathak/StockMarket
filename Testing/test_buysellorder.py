@@ -32,7 +32,7 @@ client_portfolio = [
 class BrokerUniqueTests(HttpUser):
     cntr = 0
     weight = 4
-    wait_time = between(20, 30)
+    wait_time = between(10, 12)
     def on_start(self):
         self.authenticated = False
         if BrokerUniqueTests.cntr < len(brokers):
@@ -70,7 +70,7 @@ class BrokerUniqueTests(HttpUser):
 class ClientUniqueTests(HttpUser):
     cntr = 0
     weight = 12
-    wait_time = between(20, 30)
+    wait_time = between(2, 3)
     def on_start(self):
         self.authenticated = False
         if ClientUniqueTests.cntr < 12:
