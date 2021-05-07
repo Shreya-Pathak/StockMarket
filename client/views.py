@@ -136,13 +136,16 @@ def place_order_view(request):
 			holding = models.Holdings.objects.filter(folio_id=portfolio, sid=stock).first()
 
 			# check all objects are ok
-			if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell'):
+			if holding is None and order_type=='Buy':
+				holding = models.Holdings(folio_id=portfolio, sid=stock, quantity=0, total_price=0)
+
+
+			if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell') or quantity<=0 :
 				messages.error(request, 'Invalid order.')
 				return render(request, 'client/place_order.html', {'form': form})
 			
-			# add stock to portfolio if doesnt exist
-			if holding is None:
-				holding = models.Holdings(folio_id=portfolio, sid=stock, quantity=0, total_price=0)
+			
+				
 			
 			cost = Decimal(quantity * price)
 			commission = (broker.commission * cost) / 100
