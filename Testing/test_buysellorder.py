@@ -32,7 +32,7 @@ client_portfolio = [
 class BrokerUniqueTests(HttpUser):
     cntr = 0
     weight = 4
-    wait_time = between(10, 15)
+    wait_time = between(20, 30)
     def on_start(self):
         self.authenticated = False
         if BrokerUniqueTests.cntr < len(brokers):
@@ -65,12 +65,12 @@ class BrokerUniqueTests(HttpUser):
         result_set = curr.fetchall()
 
         for order_id in result_set:
-            response = self.client.get(f'broker/approve_order?={order_id[0]}')
+            response = self.client.get(f'broker/approve_order?order={order_id[0]}')
 
 class ClientUniqueTests(HttpUser):
     cntr = 0
     weight = 12
-    wait_time = between(2, 3)
+    wait_time = between(20, 30)
     def on_start(self):
         self.authenticated = False
         if ClientUniqueTests.cntr < 12:
