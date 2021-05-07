@@ -12,6 +12,7 @@ from market.forms import *
 from io import BytesIO, StringIO
 import base64, urllib
 import numpy as np
+from time import sleep
 from time import time
 from django.core.serializers.json import DjangoJSONEncoder
 from . import models
@@ -270,18 +271,21 @@ def withdraw_view(request):
             if funds is None or acct_no is None:
                 messages.error(request, 'Invalid request.')
             else:
-                acct = models.BankAccount.objects.filter(account_number=acct_no, pid=user).first()
-                if acct is None:
-                    messages.error(request, "You can't deposit funds to others' account.")
-                elif user_user.balance < funds:
-                    messages.error(request, "Insufficient Funds in your wallet.")
-                else:
-                    with transaction.atomic():    
+                
+                with transaction.atomic():
+
+                    user_user = models.Client.objects.filter(username=request.user.username).select_for_update().first()
+                    acct = models.BankAccount.objects.filter(account_number=acct_no, pid=user).select_for_update().first()
+                    if acct is None:
+                        messages.error(request, "You can't deposit funds to others' account.")
+                    elif user_user.balance < funds:
+                        messages.error(request, "Insufficient Funds in your wallet.")
+                    else:
                         user_user.balance -= funds
                         acct.balance += funds
                         acct.save()
                         user_user.save()
-                    messages.success(request, "Funds added to your bank account.")
+                        messages.success(request, "Funds added to your bank account.")
     accts = models.BankAccount.objects.filter(pid=user)
     return render(request, f'{user_type}withdraw.html', {'accts':accts})
 
