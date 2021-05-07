@@ -81,7 +81,10 @@ def trigger():
 
             # Get hold of holdings
             buy_stock_holding = models.Holdings.objects.filter(folio_id=order.folio_id, sid=order.sid).first()
-
+            newly_made=False
+            if buy_stock_holding==None:
+                newly_made=True
+                buy_stock_holding = models.Holdings(folio_id=order.folio_id,sid=order.sid,quantity=0,total_price=0)
             # Match Orders
             matched_quantity = 0
             for order_match in order_match_set:
@@ -103,7 +106,10 @@ def trigger():
             buy_stock_holding.quantity += matched_quantity
             buy_stock_holding.total_price += matched_quantity * order.price
             order.completed_quantity += matched_quantity
-            buy_stock_holding.save(update_fields=['quantity', 'total_price'])
+            if not newly_made:
+                buy_stock_holding.save(update_fields=['quantity', 'total_price'])
+            else:
+                buy_stock_holding.save()
 
         bulk_update(current_buy_orders, update_fields=['completed_quantity'], batch_size=1000)
 

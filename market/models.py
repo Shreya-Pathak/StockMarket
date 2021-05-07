@@ -59,6 +59,7 @@ class Person(models.Model):
     telephone = models.TextField(blank=True, null=True)
 
 
+
 class Client(models.Model):
     clid = models.OneToOneField(Person, models.DO_NOTHING, primary_key=True, db_column='clid')
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -238,6 +239,9 @@ class BuySellOrder(models.Model):
 
     class Meta:
         constraints = [models.CheckConstraint(check=models.Q(completed_quantity__lte=models.F('quantity')), name='valid_buysell_state_check')]
+        indexes = [
+           models.Index(fields=['bid','sid'])
+           ]
 
 
 class LockedAtomicTransaction(Atomic):
