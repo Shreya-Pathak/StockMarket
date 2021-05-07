@@ -138,6 +138,7 @@ def place_order_view(request):
 			# check all objects are ok
 			if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell'):
 				messages.error(request, 'Invalid order.')
+				return render(request, 'client/place_order.html', {'form': form})
 			
 			# add stock to portfolio if doesnt exist
 			if holding is None:
