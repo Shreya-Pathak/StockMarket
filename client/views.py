@@ -137,7 +137,7 @@ def place_order_view(request):
 				holding = models.Holdings(folio_id=portfolio, sid=stock, quantity=0, total_price=0)
 
 
-			if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell') or quantity<=0 :
+			if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell') or quantity<=0 or price<=0:
 				messages.error(request, 'Invalid order.')
 				return render(request, 'client/place_order.html', {'form': form})
 
