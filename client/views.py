@@ -324,6 +324,9 @@ def wishlists_view(request):
 			wname = formdata.cleaned_data['wname']
 			stock = formdata.cleaned_data['stock']
 			wish = models.Wishlist.objects.filter(wname__iexact=wname, clid=client).first()
+			if wish is not None and stock is None:
+				messages.error(request, 'Wishlist already exists')
+				return HttpResponseRedirect('wishlists')
 			if wish is None:
 				wish = models.Wishlist(wname=wname, clid=client)
 				wish.save()
