@@ -225,18 +225,24 @@ def add_funds_view(request):
             if funds is None or acct_no is None:
                 messages.error(request, 'Invalid request.')
             else:
-                acct = models.BankAccount.objects.filter(account_number=acct_no, pid=user).first()
-                if acct is None:
-                    messages.error(request, "You can't add funds from others' account.")
-                elif acct.balance < funds:
-                    messages.error(request, "Insufficient Funds in your bank account.")
-                else:
-                    with transaction.atomic():    
+                with transaction.atomic():
+                    if user_type == 'broker/':
+                        user_user = models.Broker.objects.filter(username=request.user.username).select_for_update().first()
+                        user = user_user.bid
+                    else:
+                        user_user = models.Client.objects.filter(username=request.user.username).select_for_update().first()
+                        user = user_user.clid
+                    acct = models.BankAccount.objects.filter(account_number=acct_no, pid=user).select_for_update().first()
+                    if acct is None:
+                        messages.error(request, "Account not found for you.")
+                    elif acct.balance < funds:
+                        messages.error(request, "Insufficient Funds in your bank account.")
+                    else:
                         acct.balance -= funds
                         user_user.balance += funds
                         acct.save()
                         user_user.save()
-                    messages.success(request, "Funds added to your wallet.")
+                        messages.success(request, "Funds added to your wallet.")
         else:
             form = AddAcctForm(request.POST) 
             if form.is_valid():
@@ -271,13 +277,16 @@ def withdraw_view(request):
             if funds is None or acct_no is None:
                 messages.error(request, 'Invalid request.')
             else:
-                
                 with transaction.atomic():
-
-                    user_user = models.Client.objects.filter(username=request.user.username).select_for_update().first()
+                    if user_type == 'broker/':
+                        user_user = models.Broker.objects.filter(username=request.user.username).first()
+                        user = user_user.bid
+                    else:
+                        user_user = models.Client.objects.filter(username=request.user.username).first()
+                        user = user_user.clid
                     acct = models.BankAccount.objects.filter(account_number=acct_no, pid=user).select_for_update().first()
                     if acct is None:
-                        messages.error(request, "You can't deposit funds to others' account.")
+                        messages.error(request, "Account not found for you.")
                     elif user_user.balance < funds:
                         messages.error(request, "Insufficient Funds in your wallet.")
                     else:
