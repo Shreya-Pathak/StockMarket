@@ -6,6 +6,7 @@ import market.models as models
 from market.views import render
 from django.contrib import messages
 from time import sleep
+from django.db import transaction
 # Create your views here.
 
 
@@ -83,12 +84,13 @@ def signup_view(request):
                 if not User.objects.filter(username=username).exists():
                     
                     try:
-                        user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
-                        user.save()
-                        person = models.Person(name=name, address=address, telephone=telephone)
-                        person.save()
-                        client = models.Client(clid=person, username=username, balance=0)
-                        client.save()
+                        with transaction.atomic():
+                            user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
+                            user.save()
+                            person = models.Person(name=name, address=address, telephone=telephone)
+                            person.save()
+                            client = models.Client(clid=person, username=username, balance=0)
+                            client.save()
                         messages.info(request, 'You can now login using your new client account.')
                         return HttpResponseRedirect('login')
                     except :
@@ -108,12 +110,13 @@ def signup_view(request):
                 if not User.objects.filter(username=username).exists():
                     
                     try:
-                        user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
-                        user.save()
-                        person = models.Person(name=name, address=address, telephone=telephone)
-                        person.save()
-                        broker = models.Broker(bid=person, username=username, balance=0, orders_approved=0, latency=0, commission=commission)
-                        broker.save()
+                        with transaction.atomic():
+                            user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
+                            user.save()
+                            person = models.Person(name=name, address=address, telephone=telephone)
+                            person.save()
+                            broker = models.Broker(bid=person, username=username, balance=0, orders_approved=0, latency=0, commission=commission)
+                            broker.save()
                         messages.info(request, 'You can now login using your new broker account.')
                         return HttpResponseRedirect('login')
                     except :
