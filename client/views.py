@@ -139,6 +139,7 @@ def place_order_view(request):
 			if any([t is None for t in [client, portfolio, stock, broker, exchange, holding]]) or order_type not in ('Buy', 'Sell'):
 				messages.error(request, 'Invalid order.')
 				return render(request, 'client/place_order.html', {'form': form})
+
 			
 			# add stock to portfolio if doesnt exist
 			if holding is None:
@@ -209,7 +210,8 @@ def cancel_order_view(request):
 			if order.order_type == 'Buy':
 				clid.balance += order.price * rem_quantity
 			else:
-				clid.balance += order.price * order.completed_quantity
+				if order.order_type == 'current':
+					clid.balance += order.price * order.completed_quantity
 				holding = models.Holdings.objects.filter(folio_id=order.folio_id, sid=order.sid).first()
 				if holding is None:
 					messages.error(request, 'Invalid order.')
