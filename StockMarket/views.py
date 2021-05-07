@@ -5,7 +5,7 @@ import StockMarket.forms as forms
 import market.models as models
 from market.views import render
 from django.contrib import messages
-
+from time import sleep
 # Create your views here.
 
 
@@ -81,14 +81,19 @@ def signup_view(request):
                 password = client_form.cleaned_data.get('password')
                 username = email.split('@')[0]
                 if not User.objects.filter(username=username).exists():
-                    user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
-                    user.save()
-                    person = models.Person(name=name, address=address, telephone=telephone)
-                    person.save()
-                    client = models.Client(clid=person, username=username, balance=0)
-                    client.save()
-                    messages.info(request, 'You can now login using your new client account.')
-                    return HttpResponseRedirect('login')
+                    
+                    try:
+                        user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
+                        user.save()
+                        person = models.Person(name=name, address=address, telephone=telephone)
+                        person.save()
+                        client = models.Client(clid=person, username=username, balance=0)
+                        client.save()
+                        messages.info(request, 'You can now login using your new client account.')
+                        return HttpResponseRedirect('login')
+                    except :
+                        messages.error(request, 'Username already exists')
+                        return render(request, 'signup.html', {'client_form': client_form, 'broker_form': broker_form})
                 messages.error(request, "Username already exists.")
         if 'broker_signup' in request.POST:
             broker_form = forms.BrokerSignUpForm(request.POST)
@@ -101,13 +106,18 @@ def signup_view(request):
                 commission = broker_form.cleaned_data.get('commission')
                 username = email.split('@')[0]
                 if not User.objects.filter(username=username).exists():
-                    user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
-                    user.save()
-                    person = models.Person(name=name, address=address, telephone=telephone)
-                    person.save()
-                    broker = models.Broker(bid=person, username=username, balance=0, orders_approved=0, latency=0, commission=commission)
-                    broker.save()
-                    messages.info(request, 'You can now login using your new broker account.')
-                    return HttpResponseRedirect('login')
+                    
+                    try:
+                        user = User.objects.create_user(username=username, email=email, password=password, first_name=name)
+                        user.save()
+                        person = models.Person(name=name, address=address, telephone=telephone)
+                        person.save()
+                        broker = models.Broker(bid=person, username=username, balance=0, orders_approved=0, latency=0, commission=commission)
+                        broker.save()
+                        messages.info(request, 'You can now login using your new broker account.')
+                        return HttpResponseRedirect('login')
+                    except :
+                        messages.error(request, 'Username already exists')
+                        return render(request, 'signup.html', {'client_form': client_form, 'broker_form': broker_form})
                 messages.add_message(request, messages.ERROR, "Username already exists.")
     return render(request, 'signup.html', {'client_form': client_form, 'broker_form': broker_form})
