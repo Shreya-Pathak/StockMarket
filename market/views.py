@@ -67,6 +67,7 @@ def index_view(request):
 
 def custom_query(query, format_vars=None):
     "executes sql query and returns each row as a dict"
+    # print(query)
     if not query.endswith(';'): query += ';'
     with connection.cursor() as cursor:
         cursor.execute(query, format_vars)
@@ -296,7 +297,9 @@ def get_svg(fig):
     return uri
 
 
-def analysis_view(request, sid=0, eid=0):
+def analysis_view(request, sid=0, eid=0,start_date='01-01-0001',end_date='12-31-9999'):
+    print(start_date)
+    print(end_date)
     user = get_user_type(request)
     if user == 'admin/':
         return render(request, 'forbidden.html', {})
@@ -314,19 +317,19 @@ def analysis_view(request, sid=0, eid=0):
     print(sid, eid)
     ph = custom_query("""
         SELECT price, creation_time FROM market_StockPricehistory as ph 
-        WHERE ph.eid=%s and ph.sid=%s ORDER BY creation_time;""", [eid, sid])
+        WHERE ph.eid=%s and ph.sid=%s and creation_time>=to_date(%s,'MM-DD-YYYY') and creation_time<=to_date(%s,'MM-DD-YYYY') ORDER BY creation_time;""", [eid, sid,start_date,end_date])
 
     cp = custom_query("""
-        SELECT date, price from closing_price where eid=%s and sid=%s;""", [eid, sid])
+        SELECT date, price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') ;""", [eid, sid,start_date,end_date])
 
     ma = custom_query("""
-        SELECT time_bucket('3 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s group by date1 order by date1;""", [eid, sid])#moving avg
+        SELECT time_bucket('3 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY')  group by date1 order by date1;""", [eid, sid,start_date,end_date])#moving avg
 
     ma2 = custom_query("""
-        SELECT time_bucket('5 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s group by date1 order by date1;""", [eid, sid])#moving avg
+        SELECT time_bucket('5 days', date) as date1, avg(price) as price from closing_price where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY') group by date1 order by date1;""", [eid, sid, start_date,end_date])#moving avg
 
     dr = custom_query("""
-        SELECT date, dr from daily_return where eid=%s and sid=%s;""", [eid, sid])
+        SELECT date, dr from daily_return where eid=%s and sid=%s and date>=to_date(%s,'MM-DD-YYYY') and date<=to_date(%s,'MM-DD-YYYY');""", [eid, sid,start_date,end_date])
     # dr = custom_query("""
     #     SELECT date, ((price/lag(price, 1) over (partition by (sid, eid) order by date))-1) dr from closing_price where eid=%s and sid=%s;""", [eid, sid])#daily return
     # dict_ph = [{'x': d['creation_time'], 'y': d['price']} for d in ph]
@@ -448,7 +451,18 @@ def analysis_view(request, sid=0, eid=0):
                 return render(request, f'{user}analysis.html', {'st':stock.ticker, 'ex':exchange.name, 'mean':mean, 'risk':std, 'data': buf.getvalue(), 'cp': buf1.getvalue(),  'dr':buf4.getvalue(), 'form':form, 'cimage':buf5.getvalue(), 'corrv':corr_v, 'pred': x1, 'b1':b1})
         if 'datepick' in request.POST:
             start_date=request.POST.get('start','')
+            fin_st=''
+            for i in start_date:
+                fin_st=fin_st+('-' if i=='/' else i)
             end_date=request.POST.get('end','')
+            fin_end=''
+            for i in end_date:
+                fin_end=fin_end+('-' if i=='/' else i)
+            if fin_end=='':
+                fin_end='12-31-9999'
+            if fin_st=='':
+                fin_st='01-01-0001'
+            return redirect(f'/market/analysis/{sid}/{eid}/{fin_st}/{fin_end}')
             #please add redirect here and params to request
 
     # else:
