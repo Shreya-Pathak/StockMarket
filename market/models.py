@@ -258,7 +258,7 @@ class LockedAtomicTransaction(Atomic):
     def __init__(self, models, using=None, savepoint=None):
         if using is None:
             using = DEFAULT_DB_ALIAS
-        super().__init__(using, savepoint)
+        super().__init__(using, savepoint, durable=True)
         self.models = models
 
     def __enter__(self):

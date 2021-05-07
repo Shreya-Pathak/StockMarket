@@ -77,8 +77,12 @@ def portfolio_view(request):
 			messages.error(request, 'You can\'t delete a non-zero quantity owned portfolio entry.')
 		else:
 			folio = holding.folio_id
-			holding.delete()
-			messages.success(request, 'Portfolio entry deleted.')
+			try:
+				with transaction.atomic():
+					holding.delete()
+				messages.success(request, 'Portfolio entry deleted.')
+			except:
+				messages.error(request, 'Cannot delete entry due to an existing order placed')
 			if not models.Holdings.objects.filter(folio_id=folio).exists():
 				folio.delete()
 				messages.success(request, 'Portfolio also deleted.')
